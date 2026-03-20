@@ -1255,7 +1255,6 @@ window.startMode = function(hardcore) {
             });
         });
 
-        // Tự động load lại trang sau khi SW mới chiếm quyền
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (!refreshing) {
