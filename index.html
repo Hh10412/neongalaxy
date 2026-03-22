@@ -11,6 +11,97 @@
   <style>@import url(https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap);:root{--p:#0ff;--s:#f0f;--g:#0f0;--y:#ff0;--r:#ff3333;--gold:#ffd700;--bg:#050508;--purp:#b200ff}body{margin:0;overflow:hidden;background:var(--bg);color:#fff;font-family:Orbitron,sans-serif;touch-action:none;user-select:none;-webkit-touch-callout:none;-webkit-user-select:none}canvas{display:block;width:100vw;height:100vh}.overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(10,10,20,.85) 0,rgba(0,0,0,.95) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(8px)}.hidden{display:none!important}.btn-main{background:linear-gradient(45deg,var(--p),#08f);color:#000;border:none;padding:15px 30px;font-family:Orbitron;font-weight:900;margin:8px;cursor:pointer;clip-path:polygon(10% 0,100% 0,90% 100%,0 100%);transition:all .2s cubic-bezier(.175,.885,.32,1.275);text-transform:uppercase;box-shadow:0 0 15px rgba(0,255,255,.3)}.btn-main:hover{transform:scale(1.05);filter:brightness(1.2)}.btn-main:active{transform:scale(.95)}.btn-sec{background:0 0;border:2px solid var(--s);color:var(--s);box-shadow:inset 0 0 10px rgba(255,0,255,.2)}.btn-small{padding:8px 15px;font-size:11px;margin:5px}.input-box{background:rgba(0,0,0,.5);border:1px solid var(--p);color:#0ff;padding:12px;font-family:Orbitron;font-size:16px;width:250px;margin-bottom:15px;text-align:center;outline:0;box-shadow:0 0 10px rgba(0,255,255,.2) inset;border-radius:5px;transition:.3s}.input-box:focus{border-color:var(--s);box-shadow:0 0 15px rgba(255,0,255,.5) inset;color:var(--s)}.input-box::placeholder{color:rgba(0,255,255,.3)}.lb-container{width:90%;max-width:400px;background:rgba(255,255,255,.03);border:1px solid var(--p);border-radius:8px;overflow:hidden;margin-bottom:20px}.lb-tabs{display:flex;background:rgba(0,0,0,.8)}.lb-tab{flex:1;padding:12px 5px;text-align:center;cursor:pointer;font-size:11px;font-weight:700;color:#666;transition:.2s;border-bottom:2px solid transparent}.lb-tab.active{color:var(--p);border-bottom:2px solid var(--p);text-shadow:0 0 10px var(--p);background:rgba(0,255,255,.1)}.lb-content{max-height:40vh;overflow-y:auto;padding:10px}.lb-row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px;align-items:center}.lb-row:nth-child(1) .lb-rank{color:var(--gold);font-size:18px;text-shadow:0 0 10px var(--gold)}.lb-row:nth-child(2) .lb-rank{color:silver;font-size:16px}.lb-row:nth-child(3) .lb-rank{color:#cd7f32;font-size:15px}.lb-name{flex:1;margin-left:15px;font-weight:700}.lb-val{color:var(--p);font-weight:900}#uiLayer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;padding:15px;box-sizing:border-box}.hud-row{display:flex;justify-content:space-between;align-items:flex-start}.bar-wrap{width:150px;height:10px;background:rgba(0,0,0,.5);margin-bottom:6px;border:1px solid rgba(255,255,255,.2);border-radius:2px;overflow:hidden;box-shadow:0 0 5px rgba(0,0,0,.8)}.bar-val{height:100%;width:100%;transition:width .1s linear}.boss-bar-wrap{width:100%;height:6px;background:rgba(255,0,0,.2);border:1px solid var(--s);border-radius:10px;overflow:hidden;box-shadow:0 0 15px var(--s)}.btn-ult{position:absolute;bottom:40px;right:40px;width:80px;height:80px;border-radius:50%;border:2px solid var(--s);pointer-events:auto;display:flex;align-items:center;justify-content:center;font-weight:900;opacity:.4;background:rgba(0,0,0,.7);font-size:16px;box-shadow:0 0 15px var(--s);transition:.3s;color:#fff;text-shadow:0 0 5px var(--s)}.btn-ult.ready{opacity:1;box-shadow:0 0 30px var(--s),inset 0 0 20px var(--s);animation:pulse 1s infinite;cursor:pointer;border-color:#fff}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}.grid-box{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:95%;max-width:450px;max-height:55vh;overflow-y:auto;padding:10px}.equip-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:12px;border-radius:8px;text-align:center;position:relative;transition:.2s;backdrop-filter:blur(4px);cursor:pointer}.equip-card:hover{background:rgba(255,255,255,.08);transform:translateY(-2px)}.equip-card.active{border-color:var(--p);box-shadow:0 0 15px rgba(0,255,255,.3) inset;background:rgba(0,255,255,.05)}.equip-card.owned{border-color:rgba(0,255,0,.5)}.equip-icon{font-size:28px;margin-bottom:8px;display:block;filter:drop-shadow(0 0 5px currentColor)}.equip-name{font-size:12px;font-weight:900;color:#fff;margin-bottom:5px;display:block}.equip-stat{font-size:9px;color:#bbb;display:block;margin-bottom:8px}.cost-badge{background:rgba(0,0,0,.8);color:var(--gold);padding:3px 8px;font-size:10px;border:1px solid var(--gold);border-radius:3px;display:inline-block}.loading-text{font-size:14px;color:var(--y);animation:blink 1s infinite;display:none;margin-top:10px}@keyframes blink{50%{opacity:0}}.close-btn{position:absolute;top:15px;right:15px;font-size:28px;color:#fff;cursor:pointer;text-shadow:0 0 10px var(--r);z-index:2000;transition:.3s}.close-btn:hover{color:var(--r);transform:scale(1.1)}.link-text{color:var(--p);cursor:pointer;font-size:14px;text-decoration:underline;transition:.2s}.link-text:hover{color:var(--s);text-shadow:0 0 5px var(--s)}.avatar-box{width:90px;height:90px;border-radius:50%;border:2px solid var(--p);margin:0 auto 15px;background:rgba(0,0,0,.8);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 15px rgba(0,255,255,.4)}.avatar-box img{width:100%;height:100%;object-fit:cover}.avatar-list{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;width:80%}.avatar-item{width:45px;height:45px;border-radius:50%;border:2px solid #555;cursor:pointer;transition:.2s;background:rgba(0,0,0,.5)}.avatar-item.active{border-color:var(--p);box-shadow:0 0 10px var(--p);transform:scale(1.1)}.btn-pause{pointer-events:auto;background:rgba(0,0,0,.7);border:2px solid var(--y);color:var(--y);border-radius:8px;padding:10px 15px;font-size:18px;cursor:pointer;text-shadow:0 0 5px var(--y);box-shadow:0 0 10px var(--y);transition:.3s;z-index:1001}.btn-pause:hover{transform:scale(1.1)}.glitch-wrapper{width:100%;display:flex;justify-content:center;align-items:center;margin-bottom:10px}.glitch-text{position:relative;font-size:42px;font-weight:900;text-transform:uppercase;color:#fff;text-shadow:0 0 10px var(--r);text-align:center;animation:shake .4s infinite}.glitch-text::after,.glitch-text::before{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;background:0 0;opacity:.8}.glitch-text::before{left:3px;color:#0ff;text-shadow:-2px 0 #0ff;clip-path:inset(10% 0 80% 0);animation:glitch-anim 2s infinite linear alternate-reverse}.glitch-text::after{left:-3px;color:#f0f;text-shadow:2px 0 #f0f;clip-path:inset(70% 0 10% 0);animation:glitch-anim 3s infinite linear alternate-reverse}@keyframes glitch-anim{0%{clip-path:inset(20% 0 50% 0)}20%{clip-path:inset(60% 0 10% 0)}40%{clip-path:inset(40% 0 45% 0)}60%{clip-path:inset(85% 0 5% 0)}80%{clip-path:inset(15% 0 75% 0)}100%{clip-path:inset(50% 0 25% 0)}}@keyframes shake{0%{transform:translate(0)}25%{transform:translate(-2px,2px)}50%{transform:translate(2px,-2px)}75%{transform:translate(-1px,-1px)}100%{transform:translate(0)}}.pause-menu-box{background:rgba(0,0,0,.9);border:2px solid var(--p);padding:30px;border-radius:15px;text-align:center;box-shadow:0 0 30px var(--p);min-width:250px}.pause-menu-title{color:var(--p);font-size:24px;margin-bottom:20px;text-shadow:0 0 10px var(--p)}#network-status-alert{position:fixed;top:-100px;left:50%;transform:translateX(-50%);padding:12px 30px;border-radius:0 0 15px 15px;font-weight:700;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;z-index:10000;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.4);backdrop-filter:blur(8px);transition:top .6s cubic-bezier(.175,.885,.32,1.275);display:flex;align-items:center;gap:10px;letter-spacing:1px}#network-status-alert.show{top:0}.online-style{background:rgba(0,200,81,.85);border:1px solid #00c851}.offline-style{background:rgba(255,53,71,.85);border:1px solid #ff3547}</style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script><script>eruda.init()</script>
   <canvas id="gameCanvas"></canvas>
+  <div id="introScreen" class="overlay">
+    <div id="introContainer" style="max-width: 600px; padding: 20px; font-family: 'Orbitron', sans-serif;">
+    <div id="introText" style="font-size: clamp(12px, 4vw, 18px); line-height: 1; color: var(--p); text-shadow: 0 0 10px var(--p); min-height: 250px; white-space: pre-wrap; word-break: break-word; text-align: center;"></div>
+    <button id="skipIntroBtn" class="btn-main" style="margin-top: 30px; display: none; width: 100%;">BỎ QUA / VÀO TRẬN</button>
+  </div>
+</div>
+
+<script>
+const story = [
+    "NĂM 2142...",
+    "Thiên hà Neon đang đứng trước bờ vực diệt vong.",
+    "Thực thể trí tuệ nhân tạo 'Neural Overlord' đã thức tỉnh.",
+    "Nó lãnh đạo quân đoàn máy móc quét sạch mọi nền văn minh hữu cơ.",
+    "Hy vọng cuối cùng nằm ở dự án 'OVERDRIVE'...",
+    "Những phi công tinh nhuệ nhất, trang bị công nghệ lõi Neon.",
+    "Bạn là người được chọn.",
+    "Hãy khởi động động cơ. Nạp đầy năng lượng.",
+    "VÀ TIÊU DIỆT BÓNG TỐI BẰNG ÁNH SÁNG CỦA BẠN!"
+];
+
+let lineIndex = 0;
+let charIndex = 0;
+const introTextEl = document.getElementById('introText');
+const skipBtn = document.getElementById('skipIntroBtn');
+const introScreen = document.getElementById('introScreen');
+let isIntroDone = false;
+
+function typeStory() {
+    // 1. Hiện nút bỏ qua khi cốt truyện đã chạy được một nửa (Dòng số 4)
+    if (lineIndex >= Math.floor(story.length / 2)) {
+        skipBtn.style.display = "block";
+    }
+
+    if (lineIndex < story.length) {
+        if (charIndex < story[lineIndex].length) {
+            introTextEl.innerHTML += story[lineIndex].charAt(charIndex);
+            charIndex++;
+            setTimeout(typeStory, 40); 
+        } else {
+            introTextEl.innerHTML += "<br><br>";
+            lineIndex++;
+            charIndex = 0;
+            setTimeout(typeStory, 800); 
+        }
+    } else {
+        // Chạy xong hết chữ thì đổi tên nút cho ngầu
+        if (!isIntroDone) {
+            isIntroDone = true;
+            skipBtn.innerText = "XUẤT PHÁT NGAY!";
+        }
+    }
+}
+
+window.playIntroFlow = function() {
+    introScreen.classList.remove('hidden');
+    introTextEl.innerHTML = "";
+    lineIndex = 0;
+    charIndex = 0;
+    isIntroDone = false;
+    skipBtn.style.display = "none";
+    skipBtn.innerText = "BỎ QUA / VÀO TRẬN";
+    typeStory();
+};
+
+skipBtn.onclick = () => {
+    // Lưu trạng thái đã xem
+    if (typeof gData !== 'undefined') {
+        gData.hasSeenIntro = true;
+        save(); 
+    }
+    
+    // Ẩn màn hình Intro
+    introScreen.classList.add('hidden');
+
+    // 2. Kích hoạt hiệu ứng âm thanh (Tiếng động cơ vút đi)
+    if (typeof AudioSys !== 'undefined' && AudioSys.enabled) {
+        AudioSys.init();
+        if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
+        AudioSys.playTone(300, 'sawtooth', 1.0, 0.5, 1500); // Âm thanh slide từ thấp lên cao
+    }
+
+    // 3. Vào THẲNG GAME ở chế độ Bình Thường, KHÔNG ra Menu
+    if (typeof window.startMode === 'function') {
+        window.startMode(false); 
+    } else {
+        // Fallback dự phòng
+        isHardcoreMode = false;
+        startGame();
+    }
+};
+</script>
   <div class="hidden"id="uiLayer">
     <div id="bossHud"style="position:absolute;top:90px;left:50%;transform:translateX(-50%);width:60%;display:none;text-align:center">
       <div style="color:var(--s);font-size:12px;margin-bottom:5px;font-weight:900;letter-spacing:2px">NEURAL OVERLORD</div>
@@ -117,7 +208,7 @@
       <h1 class="glitch-text"data-text="TÀU BỊ PHÁ HỦY">TÀU BỊ PHÁ HỦY</h1>
     </div>
     <div id="finalStats"style="text-align:center;margin:20px;line-height:1.6;color:#fff;font-size:18px;font-weight:700;background:rgba(0,0,0,.6);padding:20px;border-radius:10px;border:1px solid var(--r);width:85%;max-width:400px;backdrop-filter:blur(5px)"></div>
-    <button class="btn-main"onclick="location.reload()"style="box-shadow:0 0 20px var(--r)">QUAY LẠI MENU</button>
+    <button class="btn-main"onclick="window.returnToMenu()"style="box-shadow:0 0 20px var(--r)">QUAY LẠI MENU</button>
   </div>
   <div class="hidden overlay"id="lvlScreen"style="background:rgba(0,0,0,.9)">
     <h2 style="color:var(--y);text-shadow:0 0 20px var(--y);font-size:30px;margin-bottom:40px">TIẾN HÓA KỸ NĂNG</h2>
@@ -383,7 +474,7 @@ const firebaseConfig = {
         toEmail: function(u) { return u.toLowerCase() + "@neongalaxy.io"; },
         setLoading: function(isLoading) {
             document.getElementById('authBtns').style.display = isLoading ? 'none' : 'flex';
-            document.getElementById('loadingText').style.display = isLoading ? 'block' : 'none';
+            document.getElementById('loadingText').style.display = isLoading ? 'block' : 'none';                        
         },
         toggleMode: function() {
             this.isLoginMode = !this.isLoginMode;
@@ -416,7 +507,11 @@ const firebaseConfig = {
                     document.getElementById('menuUsername').innerText = currentUsername.toUpperCase() + " (OFFLINE)";
                     document.getElementById('menuAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${gData.avatar || 'guest'}`;
                     document.getElementById('authScreen').classList.add('hidden'); 
-                    document.getElementById('menuScreen').classList.remove('hidden');
+if (!gData.hasSeenIntro) {
+    window.playIntroFlow();
+} else {
+    document.getElementById('menuScreen').classList.remove('hidden');
+}
                 }, 3000);
                 return;
             }
@@ -447,7 +542,7 @@ const firebaseConfig = {
         this.setLoading(true);
         try {
             const userCredential = await window.fbAuth.createUserWithEmailAndPassword(window.auth, this.toEmail(u), p);
-            let initialData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, avatar: u, lastUpdated: Date.now() };
+            let initialData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, avatar: u, lastUpdated: Date.now(), hasSeenIntro: false };
             await window.fb.setDoc(window.fb.doc(window.db, "users", userCredential.user.uid), { data: initialData });
             this.msg("Tạo thành công!", "#0f0");
         } catch(e) {
@@ -498,9 +593,7 @@ const firebaseConfig = {
                 }
             } else {
                 // Tài khoản mới hoàn toàn
-                gData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, 
-                          owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, 
-                          maxLvl: 1, maxScore: 0, avatar: u, lastUpdated: Date.now() };
+                gData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, avatar: u, lastUpdated: Date.now(), hasSeenIntro: false };
             }
     
             syncHash(); 
@@ -511,8 +604,13 @@ const firebaseConfig = {
             document.getElementById('menuAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${gData.avatar}`;
             
             this.setLoading(false); 
-            document.getElementById('authScreen').classList.add('hidden'); 
-            document.getElementById('menuScreen').classList.remove('hidden');
+document.getElementById('authScreen').classList.add('hidden'); 
+
+if (!gData.hasSeenIntro) {
+    window.playIntroFlow(); // Chạy intro nếu chưa xem
+} else {
+    document.getElementById('menuScreen').classList.remove('hidden'); // Vào thẳng menu nếu đã xem
+}
         } catch(e) {
             // Xử lý lỗi...
         }
@@ -716,6 +814,44 @@ const firebaseConfig = {
         }
         save(); location.reload(); 
     }
+    // 1. Thêm hàm mới này vào để xử lý việc ra Menu mượt mà
+window.returnToMenu = function() {
+    state = 'MENU';
+    if (typeof AudioSys !== 'undefined' && AudioSys.enabled) {
+        AudioSys.stopBGM();
+    }
+    
+    // Dọn dẹp rác trên màn hình (đưa quái và đạn về kho)
+    enemies.forEach(e => ePool.release(e)); enemies = []; 
+    bullets.forEach(b => bPool.release(b)); bullets = []; 
+    particles.forEach(p => pPool.release(p)); particles = []; 
+    texts.forEach(t => tPool.release(t)); texts = []; 
+    items = []; trails = [];
+    
+    // Ẩn UI game & Màn hình kết thúc/tạm dừng
+    document.getElementById('uiLayer').classList.add('hidden');
+    document.getElementById('overScreen').classList.add('hidden');
+    document.getElementById('pauseScreen').classList.add('hidden');
+    
+    // Hiện lại Menu
+    document.getElementById('menuScreen').classList.remove('hidden');
+};
+
+// 2. Tìm hàm executeQuit() hiện tại và SỬA LẠI
+function executeQuit() { 
+    if(isHardcoreMode) {
+        if(game.lvl > (gData.maxLvl_hc || 0)) gData.maxLvl_hc = game.lvl; 
+        if(game.score > (gData.maxScore_hc || 0)) gData.maxScore_hc = game.score;
+    } else {
+        if(game.lvl > (gData.maxLvl || 0)) gData.maxLvl = game.lvl; 
+        if(game.score > (gData.maxScore || 0)) gData.maxScore = game.score;
+    }
+    save(); // Lưu dữ liệu
+    
+    // XÓA location.reload(); VÀ THAY BẰNG HÀM SAU:
+    window.returnToMenu(); 
+}
+
     function doShake(amt) { game.shake = Math.min(amt, 30); }  
       
     function loop() {  
@@ -1287,14 +1423,13 @@ window.startMode = function(hardcore) {
 };
 
     })(); // Đóng ngoặc của hàm khởi tạo game chính
-  </script><script>
-    let newWorker;
-
+    </script>
+  <script>
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then(reg => {
             // Khi phát hiện có bản cập nhật mới
             reg.addEventListener('updatefound', () => {
-                newWorker = reg.installing;
+                let newWorker = reg.installing;
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                         // Hiển thị nút cập nhật trong Profile
@@ -1320,3 +1455,5 @@ window.startMode = function(hardcore) {
         });
     }
   </script>
+</body>
+</html>
