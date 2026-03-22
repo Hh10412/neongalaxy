@@ -2,7 +2,7 @@
 <html lang="en">
   <meta charset="UTF-8">
   <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"name="viewport">
-  <title>Neon Galaxy: Overdrive v4.7.1 - SECURE CLOUD</title>
+  <title>Neon Galaxy: Overdrive v5.5 - SECURE CLOUD</title>
   <meta content="yes"name="apple-mobile-web-app-capable">
   <meta content="black-translucent"name="apple-mobile-web-app-status-bar-style">
   <meta content="yes"name="mobile-web-app-capable">
@@ -24,8 +24,8 @@ const story = [
     "Thiên hà Neon đang đứng trước bờ vực diệt vong.",
     "Thực thể trí tuệ nhân tạo 'Neural Overlord' đã thức tỉnh.",
     "Nó lãnh đạo quân đoàn máy móc quét sạch mọi nền văn minh hữu cơ.",
-    "Hy vọng cuối cùng nằm ở dự án 'OVERDRIVE'...",
-    "Những phi công tinh nhuệ nhất, trang bị công nghệ lõi Neon.",
+    "Nhiệm vụ của bạn là sống sót đến Cấp độ 50...",
+    "Và tiêu diệt Neural Overlord để mang lại hòa bình!",
     "Bạn là người được chọn.",
     "Hãy khởi động động cơ. Nạp đầy năng lượng.",
     "VÀ TIÊU DIỆT BÓNG TỐI BẰNG ÁNH SÁNG CỦA BẠN!"
@@ -109,8 +109,8 @@ skipBtn.onclick = () => {
         <div id="bossHpBar"style="width:100%;height:100%;background:var(--s);transition:width .1s linear"></div>
       </div>
     </div>
-    <div class="hud-row">
-      <div>
+    <    <div class="hud-row">
+      <div id="lvlContainer">
         <div style="font-size:12px;color:var(--p);text-shadow:0 0 5px var(--p);font-weight:900;margin-bottom:2px">LV <span id="hudLvl">1</span></div>
         <div class="bar-wrap">
           <div class="bar-val"id="hpBar"style="background:linear-gradient(90deg,red,#f05);box-shadow:0 0 10px red"></div>
@@ -119,6 +119,7 @@ skipBtn.onclick = () => {
           <div class="bar-val"id="xpBar"style="background:var(--p);box-shadow:0 0 10px var(--p)"></div>
         </div>
       </div>
+      <div id="hudTimer" style="display:none; font-size:24px; color:#b200ff; font-weight:900; text-shadow: 0 0 15px #b200ff; letter-spacing: 2px;">00:00</div>
       <div style="display:flex;gap:15px;align-items:flex-start">
         <div style="text-align:right">
           <div id="hudScore"style="font-size:24px;color:#fff;font-weight:900;text-shadow:2px 2px 0 #000,0 0 10px var(--p)">0</div>
@@ -162,7 +163,7 @@ skipBtn.onclick = () => {
   </div>
   <div class="hidden overlay"id="menuScreen">
     <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>
-    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v4.7.1 SECURE
+    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.5 SECURE
     <div style="background:rgba(0,255,255,.1);border:1px solid var(--p);padding:5px 15px;border-radius:20px;font-size:12px;margin-bottom:30px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:0 0 10px rgba(0,255,255,.2) inset"onclick="openProfile()"><img id="menuAvatar"src="https://api.dicebear.com/7.x/bottts/svg?seed=guest"style="width:26px;height:26px;border-radius:50%;background:#000"> <span>Phi công: <b id="menuUsername"style="color:var(--gold)">GUEST</b></span></div>
     <button class="btn-main"onclick="openEquip()">TRANG BỊ (GEAR)</button> <button class="btn-main btn-sec"onclick="openShop()">NÂNG CẤP (UPGRADE)</button>
     <div style="display:flex;gap:10px"><button class="btn-main btn-small"onclick="openLeaderboard()"style="background:#333;color:#fff">🏆 BẢNG XẾP HẠNG</button> <button class="btn-main btn-small"onclick="window.AuthSys.openSwitchAccount()"style="background:#333;color:var(--r)">🔄 ĐỔI TÀI KHOẢN</button></div>
@@ -182,6 +183,7 @@ skipBtn.onclick = () => {
         <div class="lb-tab active" onclick='window.AuthSys.showLB("maxLvl",this)'>CẤP ĐỘ</div>
         <div class="lb-tab" onclick='window.AuthSys.showLB("coins",this)'>TÀI SẢN</div>
         <div class="lb-tab" onclick='window.AuthSys.showLB("maxScore",this)'>ĐIỂM SỐ</div>
+        <div class="lb-tab" id="lbTabEndless" style="display:none;" onclick='window.AuthSys.showLB("maxTime",this)'>SINH TỒN</div>
       </div>
       <div class="lb-content" id="lbContent"></div>
     </div>
@@ -243,15 +245,19 @@ skipBtn.onclick = () => {
             <span style="font-size:12px; color:#ccc; font-weight: normal; margin-top:5px; display:block;">Cơ bản - Có thể hồi máu</span>
         </button>
         
-        <button class="btn-main" onclick="startMode(true)" style="padding:20px; font-size:18px; width: 280px; color: #39FF14; var(--y); border: 2px solid var(--r); box-shadow: 0 0 20px var(--r); margin: 0;">
+                <button class="btn-main" onclick="startMode(true)" style="padding:20px; font-size:18px; width: 280px; color: #39FF14; border: 2px solid var(--r); box-shadow: 0 0 20px var(--r); margin: 0;">
             HARDCORE<br>
             <span style="font-size:12px; color:#ccc; font-weight: normal; margin-top:5px; display:block;">1 Hit = Chết (Siêu Khó)</span>
         </button>
 
-        <button class="btn-main" onclick="closeModeScreen()" style="margin-top:20px; background:#333; color:#fff; width: 200px; font-size: 14px;">
-            QUAY LẠI MENU
+        <button id="btnModeEndless" class="btn-main" onclick="startMode(2)" style="display:none; padding:20px; font-size:18px; width: 280px; color: #b200ff; border: 2px solid #b200ff; box-shadow: 0 0 20px #b200ff; margin: 0;">
+            VÔ TẬN<br>
+            <span style="font-size:12px; color:#ccc; font-weight: normal; margin-top:5px; display:block;">Sinh tồn (Mở khóa khi Thắng)</span>
         </button>
-    </div>
+        <div id="lockedEndless" style="padding:20px; font-size:18px; width: 280px; color: #555; border: 2px solid #555; background: rgba(0,0,0,0.8); margin: 0; text-align:center;">
+            ???<br>
+            <span style="font-size:12px; color:#555; font-weight: normal; margin-top:5px; display:block;">Mở khóa khi thắng Game</span>
+        </div>
 </div>
   <script type="module">let isFirebaseLoaded = false;
     let isOfflineTriggered = false;
@@ -349,13 +355,14 @@ const firebaseConfig = {
     /* ================= KHỞI TẠO BIẾN CỤC BỘ (LOCAL) ================= */
     let W, H;     
     let isHardcoreMode = false;
+    let isEndlessMode = false;
     let state = 'MENU';  
     let player, enemies = [], bullets = [], particles = [], items = [], stars = [], texts = [], trails = [];  
     let game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false };  
     let tX = window.innerWidth / 2; 
     let tY = window.innerHeight - 150;
     
-    let gData = { username: "", coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, avatar: '' };
+    let gData = { username: "", coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, hasWon: false, maxTime: 0, avatar: '' };
     let currentUsername = "";
     let dbListener = null;
     
@@ -696,7 +703,7 @@ if (!gData.hasSeenIntro) {
             const q = window.fb.query(window.fb.collection(window.db, "users"), window.fb.orderBy(`data.${queryField}`, "desc"), window.fb.limit(10));
             dbListener = window.fb.onSnapshot(q, (snapshot) => {
                 let arr = []; snapshot.forEach((doc) => { let d = doc.data().data; arr.push({ name: d.username || 'Khuyết Danh', val: d[queryField] || 0, uid: doc.id }); });
-                let html = '', suffix = sortBy === 'coins' ? ' 💰' : (sortBy==='maxLvl' ? ' LVL' : ' PTS'), myUid = window.auth.currentUser ? window.auth.currentUser.uid : null;
+                let html = '', suffix = sortBy === 'coins' ? ' 💰' : (sortBy==='maxLvl' ? ' LVL' : (sortBy==='maxTime' ? ' Giây' : ' PTS')), myUid = window.auth.currentUser ? window.auth.currentUser.uid : null;                
                 arr.forEach((u, idx) => { html += `<div class="lb-row" ${u.uid === myUid ? 'style="background:rgba(0,255,255,0.1); border-left:3px solid var(--p);"' : ''}><div class="lb-rank">#${idx+1}</div><div class="lb-name">${u.name} ${u.uid === myUid ? '(Bạn)' : ''}</div><div class="lb-val">${u.val}${suffix}</div></div>`; });
                 if(arr.length === 0) html = "<div style='text-align:center; padding: 20px; color:#666;'>Chưa có dữ liệu phi công</div>";
                 document.getElementById('lbContent').innerHTML = html;
@@ -794,9 +801,16 @@ if (!gData.hasSeenIntro) {
         items = []; trails = [];  
         // ------------------------------------
     
-        game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false };  
-        tX = W/2; tY = H-150; loop();  
-    }  
+                game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false, surviveFrames: 0 }; 
+        
+        if (isEndlessMode) {
+            document.getElementById('lvlContainer').style.display = 'none';
+            document.getElementById('hudTimer').style.display = 'block';
+        } else {
+            document.getElementById('lvlContainer').style.display = 'block';
+            document.getElementById('hudTimer').style.display = 'none';
+        }
+   }        
     
     function togglePause() {
         const pauseScreen = document.getElementById('pauseScreen'), mainPause = document.getElementById('mainPauseMenu'), confirmMenu = document.getElementById('confirmQuitMenu');
@@ -804,16 +818,6 @@ if (!gData.hasSeenIntro) {
         else if (state === 'PAUSED_MANUAL') { state = 'PLAYING'; if (AudioSys.enabled) AudioSys.playBGM(); pauseScreen.classList.add('hidden'); loop(); }
     }
     function showConfirmQuit(isShowing) { isShowing ? (document.getElementById('mainPauseMenu').classList.add('hidden'), document.getElementById('confirmQuitMenu').classList.remove('hidden')) : (document.getElementById('mainPauseMenu').classList.remove('hidden'), document.getElementById('confirmQuitMenu').classList.add('hidden')); }
-    function executeQuit() { 
-        if(isHardcoreMode) {
-            if(game.lvl > (gData.maxLvl_hc || 0)) gData.maxLvl_hc = game.lvl; 
-            if(game.score > (gData.maxScore_hc || 0)) gData.maxScore_hc = game.score;
-        } else {
-            if(game.lvl > (gData.maxLvl || 0)) gData.maxLvl = game.lvl; 
-            if(game.score > (gData.maxScore || 0)) gData.maxScore = game.score;
-        }
-        save(); location.reload(); 
-    }
     // 1. Thêm hàm mới này vào để xử lý việc ra Menu mượt mà
 window.returnToMenu = function() {
     state = 'MENU';
@@ -839,7 +843,10 @@ window.returnToMenu = function() {
 
 // 2. Tìm hàm executeQuit() hiện tại và SỬA LẠI
 function executeQuit() { 
-    if(isHardcoreMode) {
+    if(isEndlessMode) {
+        let totalSecs = Math.floor(game.surviveFrames / 60);
+        if(totalSecs > (gData.maxTime || 0)) gData.maxTime = totalSecs;
+    } else if(isHardcoreMode) {
         if(game.lvl > (gData.maxLvl_hc || 0)) gData.maxLvl_hc = game.lvl; 
         if(game.score > (gData.maxScore_hc || 0)) gData.maxScore_hc = game.score;
     } else {
@@ -847,7 +854,7 @@ function executeQuit() {
         if(game.score > (gData.maxScore || 0)) gData.maxScore = game.score;
     }
     save(); // Lưu dữ liệu
-    
+
     // XÓA location.reload(); VÀ THAY BẰNG HÀM SAU:
     window.returnToMenu(); 
 }
@@ -855,6 +862,17 @@ function executeQuit() {
     function doShake(amt) { game.shake = Math.min(amt, 30); }  
       
     function loop() {  
+                if(isEndlessMode && !game.boss) {
+            game.surviveFrames++;
+            // Cứ 60 giây (3600 frames) thì tăng độ khó (level ngầm) và cho lên 1 cấp để chọn Kỹ năng
+            if(game.surviveFrames % 3600 === 0) {
+                game.lvl++;
+                if(game.lvl % 5 === 0) spawnBoss(); // Vẫn gọi Boss để tăng kịch tính
+                AudioSys.sfxLevel(); 
+                showLvlUp();
+            }
+        }
+
         if(state !== 'PLAYING') return; requestAnimationFrame(loop); game.frame++;  
         ctx.save();  
         if(game.shake > 0) { ctx.translate((Math.random()-0.5)*game.shake, (Math.random()-0.5)*game.shake); game.shake *= 0.85; if(game.shake < 0.5) game.shake = 0; }  
@@ -907,9 +925,17 @@ function executeQuit() {
         enemies.push(e);  
     }
       
-        function spawnBoss(){ 
-        // Bốc ngẫu nhiên 1 trong 10 con Boss
-        let template = BOSS_TEMPLATES[Math.floor(Math.random() * BOSS_TEMPLATES.length)];
+            function spawnBoss(){ 
+        let template;
+        if (game.lvl === 50) {
+            // Ép ra Neural Overlord (id: 10) khi đến Cấp 50
+            template = BOSS_TEMPLATES.find(b => b.id === 10);
+        } else {
+            // Các cấp khác (5, 10, 15... 45) sẽ random các Boss còn lại
+            let normalBosses = BOSS_TEMPLATES.filter(b => b.id !== 10);
+            template = normalBosses[Math.floor(Math.random() * normalBosses.length)];
+        }
+
         let hp = player.maxHp * template.hpMult * (1 + game.lvl * 0.1); 
         
         uiCache.bossHpBar.parentElement.parentElement.style.display = 'block'; 
@@ -928,7 +954,7 @@ function executeQuit() {
         enemies.push(e); 
         game.boss = true; 
     }  
-      
+
     function fire() {  
         const w = EQUIP_DB.weapons[player.wep]; AudioSys.sfxShoot(w.type); let dmg = player.atk;  
         if(w.type === 'spread') { for(let i=-1; i<=1; i++) spawnBullet({x:player.x, y:player.y-20, vx:i*3, vy:-15, dmg:dmg*0.7, c:w.color, type:'std', w:4, h:10}); } 
@@ -993,6 +1019,7 @@ function executeQuit() {
                 let ang = Math.atan2(player.y - e.y, player.x - e.x); 
                 spawnBullet({x: e.x, y: e.y, vx: Math.cos(ang)*10, vy: Math.sin(ang)*10, dmg: getEnemyDamage('sniper'), c: '#b200ff', isEnemy: true, r: 4}); 
             } 
+            if(e.name === "Neural Overlord") setTimeout(gameWin, 1500);
         }
 
                 if(e.type === 'boss') { 
@@ -1070,6 +1097,7 @@ function executeQuit() {
                     enemies.splice(i, 1); 
                 }
             } 
+             if(e.name === "Neural Overlord") setTimeout(gameWin, 1500);
             continue;  
         }
         
@@ -1117,8 +1145,9 @@ function executeQuit() {
                             items.push({x:e.x, y:e.y, t: 's'}); // Rớt Khiên
                         } else if(rngDrop < (player.hp < player.maxHp * 0.35 ? 0.3 : 0.05)) {
                             items.push({x:e.x, y:e.y, t: 'h'}); // Rớt Máu
-                        } else if(rngDrop > (0.9 - (gData.stats.luck||0)*0.05)) {
-                            items.push({x:e.x, y:e.y, t: 'x'}); // Rớt EXP
+                                                } else if(rngDrop > (0.9 - (gData.stats.luck||0)*0.05)) {
+                            if (isEndlessMode) items.push({x: e.x, y: e.y, t: 'c', val: rewardAmount}); // Thay EXP bằng vàng
+                            else items.push({x:e.x, y:e.y, t: 'x'}); // Rớt EXP bình thường
                         } else {
                             // Nếu không rớt mấy cái trên thì mới rớt Tiền
                             items.push({x: e.x, y: e.y, t: 'c', val: rewardAmount}); 
@@ -1236,7 +1265,8 @@ function executeQuit() {
                     
                     ePool.release(e);
                     enemies.splice(i, 1);
-                }
+               if(e.name === "Neural Overlord") setTimeout(gameWin, 1500);
+             }
             } else {
                 // 2. Nếu là quái thường: Xóa bỏ và rớt đồ như bình thường
                 spawnParticles(e.x, e.y, e.color, 40, 2); 
@@ -1249,10 +1279,50 @@ function executeQuit() {
         }
     } 
 } 
-    
-    function gameOver() { 
-        state = 'OVER'; AudioSys.stopBGM(); document.getElementById('uiLayer').classList.add('hidden'); document.getElementById('overScreen').classList.remove('hidden'); 
+     
+            function gameOver() { 
+        state = 'OVER'; 
+        if(typeof AudioSys !== 'undefined' && AudioSys.enabled) AudioSys.stopBGM(); 
+        document.getElementById('uiLayer').classList.add('hidden'); 
+        document.getElementById('overScreen').classList.remove('hidden'); 
         
+        // --- ĐOẠN CODE BẠN YÊU CẦU: RESET CHỮ GLITCH VỀ TRẠNG THÁI THUA ---
+        let glitchText = document.querySelector('.glitch-text');
+        glitchText.setAttribute('data-text', 'TÀU BỊ PHÁ HỦY');
+        glitchText.innerText = 'TÀU BỊ PHÁ HỦY';
+        glitchText.style.color = '#fff';
+        glitchText.style.textShadow = '0 0 10px var(--r)';
+        // -----------------------------------------------------------------
+       // Lưu kỷ lục theo chế độ chơi
+        let modeName = "BÌNH THƯỜNG";
+        let statsHtml = `CẤP ĐỘ ĐẠT ĐƯỢC: ${game.lvl}<br>ĐIỂM CHUẨN: ${game.score}`;
+
+        if(isEndlessMode) {
+            let totalSecs = Math.floor(game.surviveFrames / 60);
+            if(totalSecs > (gData.maxTime || 0)) gData.maxTime = totalSecs;
+            modeName = "VÔ TẬN";
+            statsHtml = `THỜI GIAN SỐNG SÓT: ${totalSecs} GIÂY<br>TIÊU DIỆT: ${game.score/50} KẺ ĐỊCH`;
+        } else if(isHardcoreMode) {
+            if(game.lvl > (gData.maxLvl_hc || 0)) gData.maxLvl_hc = game.lvl; 
+            if(game.score > (gData.maxScore_hc || 0)) gData.maxScore_hc = game.score;
+            modeName = "HARDCORE";
+        } else {
+            if(game.lvl > (gData.maxLvl || 0)) gData.maxLvl = game.lvl; 
+            if(game.score > (gData.maxScore || 0)) gData.maxScore = game.score;
+        }
+        
+        // Hiển thị chỉ số cuối cùng
+        document.getElementById('finalStats').innerHTML = `${statsHtml}<br><span style="color:${isEndlessMode?'#b200ff':(isHardcoreMode?'var(--r)':'var(--p)')}; font-size:12px;">CHẾ ĐỘ: ${modeName}</span><br><br><div style="border-top: 1px solid rgba(255,215,0,0.3); margin-top: 10px; padding-top: 10px;"><div style="color:#aaa; font-size: 14px;">TÀI SẢN HIỆN TẠI</div><div style="color:var(--gold); font-size: 32px; text-shadow: 0 0 15px var(--gold);">${gData.coins.toLocaleString()} 💰</div><div style="color:#0f0; font-size: 11px; margin-top: 5px;">[ ĐÃ ĐỒNG BỘ CLOUD ]</div></div>`; 
+        save(); 
+    }  
+    function gameWin() { 
+        state = 'OVER'; 
+        if(typeof AudioSys !== 'undefined' && AudioSys.enabled) AudioSys.stopBGM(); 
+        document.getElementById('uiLayer').classList.add('hidden'); 
+        document.getElementById('overScreen').classList.remove('hidden'); 
+        
+        // Lưu kỷ lục
+                gData.hasWon = true; // <--- DÒNG MỚI THÊM VÀO ĐÂY
         if(isHardcoreMode) {
             if(game.lvl > (gData.maxLvl_hc || 0)) gData.maxLvl_hc = game.lvl; 
             if(game.score > (gData.maxScore_hc || 0)) gData.maxScore_hc = game.score;
@@ -1261,9 +1331,17 @@ function executeQuit() {
             if(game.score > (gData.maxScore || 0)) gData.maxScore = game.score;
         }
         
-        document.getElementById('finalStats').innerHTML = `CẤP ĐỘ ĐẠT ĐƯỢC: ${game.lvl}<br>ĐIỂM CHUẨN: ${game.score}<br><span style="color:${isHardcoreMode?'var(--r)':'var(--p)'}; font-size:12px;">CHẾ ĐỘ: ${isHardcoreMode?'HARDCORE':'BÌNH THƯỜNG'}</span><br><br><div style="border-top: 1px solid rgba(255,215,0,0.3); margin-top: 10px; padding-top: 10px;"><div style="color:#aaa; font-size: 14px;">TÀI SẢN HIỆN TẠI</div><div style="color:var(--gold); font-size: 32px; text-shadow: 0 0 15px var(--gold);">${gData.coins.toLocaleString()} 💰</div><div style="color:#0f0; font-size: 11px; margin-top: 5px;">[ ĐÃ ĐỒNG BỘ CLOUD ]</div></div>`; 
+        // Đổi hiệu ứng chữ Glitch sang màu xanh
+        let glitchText = document.querySelector('.glitch-text');
+        glitchText.setAttribute('data-text', 'CHIẾN THẮNG VẺ VANG');
+        glitchText.innerText = 'CHIẾN THẮNG VẺ VANG';
+        glitchText.style.color = '#0f0';
+        glitchText.style.textShadow = '0 0 20px #0f0';
+
+        document.getElementById('finalStats').innerHTML = `BẠN ĐÃ ĐÁNH BẠI NEURAL OVERLORD VÀ CỨU LẤY THIÊN HÀ!<br><br>CẤP ĐỘ ĐẠT ĐƯỢC: ${game.lvl}<br>ĐIỂM CHUẨN: ${game.score}<br><span style="color:${isHardcoreMode?'var(--r)':'var(--p)'}; font-size:12px;">CHẾ ĐỘ: ${isHardcoreMode?'HARDCORE':'BÌNH THƯỜNG'}</span><br><br><div style="border-top: 1px solid rgba(255,215,0,0.3); margin-top: 10px; padding-top: 10px;"><div style="color:#aaa; font-size: 14px;">TÀI SẢN HIỆN TẠI</div><div style="color:var(--gold); font-size: 32px; text-shadow: 0 0 15px var(--gold);">${gData.coins.toLocaleString()} 💰</div><div style="color:#0f0; font-size: 11px; margin-top: 5px;">[ ĐÃ ĐỒNG BỘ CLOUD ]</div></div>`; 
         save(); 
     }  
+
     function updateHUD() { 
         uiCache.hpBar.style.width = Math.max(0, player.hp/player.maxHp*100) + '%'; 
         uiCache.xpBar.style.width = (game.exp/game.nextExp*100) + '%'; 
@@ -1274,10 +1352,21 @@ function executeQuit() {
         uiCache.ultBtn.style.background = `conic-gradient(var(--p) ${game.ult}%, rgba(0,0,0,0.8) 0)`; 
         uiCache.ultPerc.innerText = Math.floor(game.ult)+'%'; 
         if(game.ult >= 100) uiCache.ultBtn.classList.add('ready'); else uiCache.ultBtn.classList.remove('ready'); 
+                if (isEndlessMode) {
+            let totalSecs = Math.floor(game.surviveFrames / 60);
+            let m = Math.floor(totalSecs / 60).toString().padStart(2, '0');
+            let s = (totalSecs % 60).toString().padStart(2, '0');
+            document.getElementById('hudTimer').innerText = m + ":" + s;
+        }
     }  
       
     /* ================= GIAO DIỆN MUA BÁN (BẢO MẬT) ================= */  
-    function openLeaderboard() { document.getElementById('menuScreen').classList.add('hidden'); document.getElementById('lbScreen').classList.remove('hidden'); window.AuthSys.showLB('maxLvl', document.querySelector('.lb-tab')); }
+        function openLeaderboard() { 
+        document.getElementById('menuScreen').classList.add('hidden'); 
+        document.getElementById('lbScreen').classList.remove('hidden'); 
+        if (gData.hasWon) document.getElementById('lbTabEndless').style.display = 'block';
+        window.AuthSys.showLB('maxLvl', document.querySelector('.lb-tab')); 
+    }
     function closeLeaderboard() { document.getElementById('lbScreen').classList.add('hidden'); document.getElementById('menuScreen').classList.remove('hidden'); }
     function openEquip() { document.getElementById('menuScreen').classList.add('hidden'); document.getElementById('equipScreen').classList.remove('hidden'); document.getElementById('eqCoin').innerText = gData.coins; renderEquipGrid('weaponGrid', EQUIP_DB.weapons, 'w'); renderEquipGrid('hullGrid', EQUIP_DB.hulls, 'h'); }  
     function renderEquipGrid(id, db, type) { const el = document.getElementById(id); el.innerHTML = ''; for(let k in db) { let item = db[k], owned = gData.owned.includes(k), equipped = gData.equip[type] === k; let div = document.createElement('div'); div.className = `equip-card ${equipped?'active':''} ${owned?'owned':''}`; div.onclick = () => handleEquipClick(k, type, db[k].cost); div.innerHTML = `<span class="equip-icon" style="color:${item.color||'#fff'}">${type=='w'?'⚔️':'🛡️'}</span><span class="equip-name">${item.n}</span><span class="equip-stat">${item.d}</span>${equipped ? '<b style="color:var(--p);font-size:11px">ĐANG DÙNG</b>' : (owned ? '<span style="color:#0f0;font-size:10px">SỞ HỮU</span>' : `<span class="cost-badge">${item.cost} 💰</span>`)}`; el.appendChild(div); } }  
@@ -1399,26 +1488,26 @@ function executeQuit() {
     });
     
     /* ========================================================================== */
+
    /* ================= QUẢN LÝ CHẾ ĐỘ CHƠI ================= */
 window.openModeScreen = function() {
     document.getElementById('menuScreen').classList.add('hidden');
     document.getElementById('modeScreen').classList.remove('hidden');
+    
+    // Kiểm tra xem đã thắng chưa để mở khóa
+    if (gData.hasWon) {
+        document.getElementById('btnModeEndless').style.display = 'block';
+        document.getElementById('lockedEndless').style.display = 'none';
+    } else {
+        document.getElementById('btnModeEndless').style.display = 'none';
+        document.getElementById('lockedEndless').style.display = 'block';
+    }
 };
 
-window.closeModeScreen = function() {
+window.startMode = function(mode) {
+    isHardcoreMode = (mode === 1 || mode === true); 
+    isEndlessMode = (mode === 2); // 2 là mã của Vô Tận
     document.getElementById('modeScreen').classList.add('hidden');
-    document.getElementById('menuScreen').classList.remove('hidden');
-};
-
-// ĐÂY LÀ HÀM CÒN THIẾU KHIẾN GAME BỊ ĐEN MÀN HÌNH
-window.startMode = function(hardcore) {
-    // 1. Cập nhật biến chế độ (biến này đã được khai báo ở đầu Script)
-    isHardcoreMode = hardcore; 
-    
-    // 2. Ẩn màn hình chọn chế độ
-    document.getElementById('modeScreen').classList.add('hidden');
-    
-    // 3. Gọi hàm chạy game
     startGame(); 
 };
 
