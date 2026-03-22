@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"name="viewport">
-  <title>Neon Galaxy: Overdrive v5.6 - SECURE CLOUD</title>
+  <title>Neon Galaxy: Overdrive v5.6.1 - SECURE CLOUD</title>
   <meta content="yes"name="apple-mobile-web-app-capable">
   <meta content="black-translucent"name="apple-mobile-web-app-status-bar-style">
   <meta content="yes"name="mobile-web-app-capable">
@@ -14,26 +14,39 @@
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
-  <div id="introScreen" class="overlay">
-    <div id="introContainer" style="max-width: 600px; padding: 20px; font-family: 'Orbitron', sans-serif;">
-    <div id="introText" style="font-size: clamp(12px, 4vw, 18px); line-height: 1; color: var(--p); text-shadow: 0 0 10px var(--p); min-height: 250px; white-space: pre-wrap; word-break: break-word; text-align: center;"></div>
-    <button id="skipIntroBtn" class="btn-main" style="margin-top: 30px; display: none; width: 100%;">BỎ QUA / VÀO TRẬN</button>
+    <div id="introScreen" class="overlay">
+    <div id="introContainer" style="width: 90%; max-width: 600px; max-height: 80vh; padding: 25px; box-sizing: border-box; overflow-y: auto; font-family: 'Orbitron', monospace; background: rgba(15, 5, 5, 0.95); border: 2px solid var(--r); border-radius: 8px; box-shadow: 0 0 25px rgba(255, 50, 50, 0.4) inset; position: relative;">
+  <div style="color: #fff; background: var(--r); display: block; padding: 5px 15px; font-size: 12px; font-weight: 900; margin-bottom: 15px; letter-spacing: 2px; animation: blink 1s infinite; position: sticky; top: -25px; z-index: 10; text-align: center; border-bottom: 2px solid #000;">
+    [ HỆ THỐNG CẢNH BÁO XÂM LĂNG - TỐI MẬT ]
   </div>
+  
+  <div id="introText" style="font-size: clamp(12px, 3.8vw, 15px); line-height: 1.8; color: #ff5555; text-shadow: 0 0 5px #ff0000; white-space: pre-wrap; word-break: break-word; text-align: left; padding-top: 10px;"></div>
+  
+  <button id="skipIntroBtn" class="btn-main" style="margin-top: 25px; display: none; width: 100%; background: var(--r); color: #fff; box-shadow: 0 0 15px var(--r);">CHẤP NHẬN TỬ CHIẾN</button>
+</div>
+
+  </div>  
 </div>
 
 <script>
 const story = [
-    "NĂM 2142...",
-    "Thiên hà Neon đang đứng trước bờ vực diệt vong.",
-    "Thực thể trí tuệ nhân tạo 'Neural Overlord' đã thức tỉnh.",
-    "Nó lãnh đạo quân đoàn máy móc quét sạch mọi nền văn minh hữu cơ.",
-    "Hy vọng cuối cùng nằm ở dự án 'OVERDRIVE'...",
-    "Những phi công tinh nhuệ nhất, trang bị công nghệ lõi Neon.",
-    "Bạn là người được chọn.",
-    "Hãy khởi động động cơ. Nạp đầy năng lượng.",
-    "VÀ TIÊU DIỆT BÓNG TỐI BẰNG ÁNH SÁNG CỦA BẠN!"
+    "ĐANG THIẾT LẬP KẾT NỐI VỚI TRẠM QUYỀN LỰC CUỐI CÙNG...",
+    "MÃ LỆNH: OLYMPUS-FALLEN. Tình trạng: Tuyệt vọng.",
+    "Năm 2142, nhân loại không còn nhìn thấy ánh sáng mặt trời.",
+    "Thực thể cơ khí 'Neural Overlord' đã nuốt chửng 12 tinh hệ.",
+    "Hàng tỷ sinh mạng đã tan biến thành mã số trong hư vô.",
+    "Phòng tuyến Titan đã sụp đổ sau 400 ngày cầm cự.",
+    "Chúng ta không còn hạm đội, không còn đồng minh.",
+    "Chỉ còn duy nhất một lõi năng lượng Overdrive chưa bị đồng hóa.",
+    "Và nó đang nằm trong tay bạn - Phi công số hiệu 00-X.",
+    "Kẻ địch đang tràn ngập tại Tầng 50, lõi Neutron đang nóng dần.",
+    "Nếu nó đạt ngưỡng 100%, thực tại này sẽ bị xóa sổ.",
+    "Nhiệm vụ của bạn: Một mình xuyên thủng 49 tầng địa ngục máy.",
+    "Không có tiếp tế. Không có đường quay lại.",
+    "Bạn không chiến đấu để chiến thắng. Bạn chiến đấu để tồn tại.",
+    "Vì nếu bạn gục ngã, nhân loại sẽ chỉ còn là một dòng ghi chú lỗi.",
+    "KÍCH HOẠT HỆ THỐNG... CHUẨN BỊ NHẢY VÀO VÙNG CHIẾN SỰ!"
 ];
-
 let lineIndex = 0;
 let charIndex = 0;
 const introTextEl = document.getElementById('introText');
@@ -42,15 +55,28 @@ const introScreen = document.getElementById('introScreen');
 let isIntroDone = false;
 
 function typeStory() {
-    if (lineIndex >= Math.floor(story.length / 2)) skipBtn.style.display = "block";
+    const container = document.getElementById('introContainer');
+    if (lineIndex >= Math.floor(story.length / 3)) skipBtn.style.display = "block";
+    
     if (lineIndex < story.length) {
         if (charIndex < story[lineIndex].length) {
-            introTextEl.innerHTML += story[lineIndex].charAt(charIndex); charIndex++; setTimeout(typeStory, 40); 
+            introTextEl.innerHTML += story[lineIndex].charAt(charIndex);
+            charIndex++;
+            // Tự động cuộn xuống khi chữ tràn
+            container.scrollTop = container.scrollHeight;
+            setTimeout(typeStory, 50); 
         } else {
-            introTextEl.innerHTML += "<br><br>"; lineIndex++; charIndex = 0; setTimeout(typeStory, 800); 
+            introTextEl.innerHTML += "<br><br>";
+            lineIndex++;
+            charIndex = 0;
+            container.scrollTop = container.scrollHeight;
+            setTimeout(typeStory, 1000); 
         }
     } else {
-        if (!isIntroDone) { isIntroDone = true; skipBtn.innerText = "XUẤT PHÁT NGAY!"; }
+        if (!isIntroDone) { 
+            isIntroDone = true; 
+            skipBtn.innerText = "XUẤT PHÁT NGAY!"; 
+        }
     }
 }
 
@@ -130,7 +156,7 @@ skipBtn.onclick = () => {
   </div>
   <div class="hidden overlay"id="menuScreen">
     <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>
-    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.6 SECURE
+    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.6.1 SECURE
     <div style="background:rgba(0,255,255,.1);border:1px solid var(--p);padding:5px 15px;border-radius:20px;font-size:12px;margin-bottom:30px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:0 0 10px rgba(0,255,255,.2) inset"onclick="openProfile()"><img id="menuAvatar"src="https://api.dicebear.com/7.x/bottts/svg?seed=guest"style="width:26px;height:26px;border-radius:50%;background:#000"> <span>Phi công: <b id="menuUsername"style="color:var(--gold)">GUEST</b></span></div>
     <button class="btn-main"onclick="openEquip()">TRANG BỊ (GEAR)</button> <button class="btn-main btn-sec"onclick="openShop()">NÂNG CẤP (UPGRADE)</button>
     <div style="display:flex;gap:10px"><button class="btn-main btn-small"onclick="openLeaderboard()"style="background:#333;color:#fff">🏆 BẢNG XẾP HẠNG</button> <button class="btn-main btn-small"onclick="window.AuthSys.openSwitchAccount()"style="background:#333;color:var(--r)">🔄 ĐỔI TÀI KHOẢN</button></div>

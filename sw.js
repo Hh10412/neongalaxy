@@ -1,4 +1,4 @@
-const CACHE_NAME = 'neon-galaxy-v5.6'; // Đổi tên này (v4.6, v4.7...) để kích hoạt cập nhật
+const CACHE_NAME = 'neon-galaxy-v5.6.1'; // Đổi tên này (v4.6, v4.7...) để kích hoạt cập nhật
 const urlsToCache = [
     './',
     './index.html',
