@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"name="viewport">
-  <title>Neon Galaxy: Overdrive v5.5 - SECURE CLOUD</title>
+  <title>Neon Galaxy: Overdrive v5.6 - SECURE CLOUD</title>
   <meta content="yes"name="apple-mobile-web-app-capable">
   <meta content="black-translucent"name="apple-mobile-web-app-status-bar-style">
   <meta content="yes"name="mobile-web-app-capable">
@@ -130,7 +130,7 @@ skipBtn.onclick = () => {
   </div>
   <div class="hidden overlay"id="menuScreen">
     <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>
-    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.5 SECURE
+    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.6 SECURE
     <div style="background:rgba(0,255,255,.1);border:1px solid var(--p);padding:5px 15px;border-radius:20px;font-size:12px;margin-bottom:30px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:0 0 10px rgba(0,255,255,.2) inset"onclick="openProfile()"><img id="menuAvatar"src="https://api.dicebear.com/7.x/bottts/svg?seed=guest"style="width:26px;height:26px;border-radius:50%;background:#000"> <span>Phi công: <b id="menuUsername"style="color:var(--gold)">GUEST</b></span></div>
     <button class="btn-main"onclick="openEquip()">TRANG BỊ (GEAR)</button> <button class="btn-main btn-sec"onclick="openShop()">NÂNG CẤP (UPGRADE)</button>
     <div style="display:flex;gap:10px"><button class="btn-main btn-small"onclick="openLeaderboard()"style="background:#333;color:#fff">🏆 BẢNG XẾP HẠNG</button> <button class="btn-main btn-small"onclick="window.AuthSys.openSwitchAccount()"style="background:#333;color:var(--r)">🔄 ĐỔI TÀI KHOẢN</button></div>
@@ -464,8 +464,19 @@ skipBtn.onclick = () => {
         e.baseX = e.x; enemies.push(e);  
     }
       
-    function spawnBoss(){ 
-        let template = BOSS_TEMPLATES[Math.floor(Math.random() * BOSS_TEMPLATES.length)];
+        function spawnBoss(){ 
+        let template;
+        if (!gData.hasWon) {
+            if (game.lvl === 50) {
+                template = BOSS_TEMPLATES.find(b => b.id === 10);
+            } else {
+                let regularBosses = BOSS_TEMPLATES.filter(b => b.id !== 10);
+                template = regularBosses[Math.floor(Math.random() * regularBosses.length)];
+            }
+        } else {
+            template = BOSS_TEMPLATES[Math.floor(Math.random() * BOSS_TEMPLATES.length)];
+        }
+        
         let hp = player.maxHp * template.hpMult * (1 + game.lvl * 0.1); 
         uiCache.bossHpBar.parentElement.parentElement.style.display = 'block'; uiCache.bossHpBar.parentElement.previousElementSibling.innerText = template.name.toUpperCase();
         let e = ePool.get(); if(!e) return;
@@ -545,8 +556,8 @@ skipBtn.onclick = () => {
                     if(e.type === 'boss') { let impactDmg = player.atk * 10; e.hp -= impactDmg; addText(Math.floor(impactDmg), e.x, e.y, true, '#ffaa00'); spawnParticles(e.x, e.y, e.color, 15); }
                     doShake(Math.min(dmg / 10, 30)); addText(isHardcoreMode ? "FATAL!" : "-" + Math.floor(dmg), player.x, player.y - 30, false, '#ff3333'); AudioSys.sfxHit(); spawnParticles(player.x, player.y, '#f00', 20, 2);  
                     if(e.type !== 'boss') { ePool.release(e); enemies.splice(i, 1); } if(player.hp <= 0) gameOver();
-                    if(e.type === 'boss' && e.hp <= 0) { 
-                        game.boss = false; uiCache.bossHpBar.parentElement.parentElement.style.display='none'; game.score += 5000; gData.hasWon = true; save(); AudioSys.sfxExplode(); spawnParticles(e.x, e.y, e.color, 50); ePool.release(e); enemies.splice(i, 1); 
+                                        if(e.type === 'boss' && e.hp <= 0) { 
+                        game.boss = false; uiCache.bossHpBar.parentElement.parentElement.style.display='none'; game.score += 5000; if (e.name === "Neural Overlord") gData.hasWon = true; save(); AudioSys.sfxExplode(); spawnParticles(e.x, e.y, e.color, 50); ePool.release(e); enemies.splice(i, 1); 
                     }
                 } 
                 continue;  
@@ -569,7 +580,7 @@ skipBtn.onclick = () => {
                             game.boss = false; uiCache.bossHpBar.parentElement.parentElement.style.display='none'; game.score += 5000; game.exp += 50;
                             rewardAmount = Math.floor(500 * coinMultiplier); secureAddCoins(rewardAmount);
                             addText("BOSS BONUS +" + rewardAmount, e.x, e.y - 40, true, '#ffd700', true);
-                            gData.hasWon = true; save();
+                            if (e.name === "Neural Overlord") gData.hasWon = true; save();
                         } else { 
                             game.score += (e.type==='tank'?400:150); rewardAmount = Math.floor(20 * coinMultiplier);
                             let rngDrop = Math.random();
@@ -616,7 +627,7 @@ skipBtn.onclick = () => {
                 let e = enemies[i];
                 if (e.type === 'boss') {
                     let ultDmg = player.atk * 10; e.hp -= ultDmg; addText("ULTIMATE TẬP KÍCH!", e.x, e.y - 40, true, '#ff00ff', true); addText("-" + Math.floor(ultDmg), e.x, e.y, true, '#ffaa00'); spawnParticles(e.x, e.y, e.color, 60, 2.5);
-                    if (e.hp <= 0.2) { game.boss = false; uiCache.bossHpBar.parentElement.parentElement.style.display = 'none'; game.score += 5000; game.exp += 50; let coinMultiplier = isHardcoreMode ? 1.5 : 1; let rewardAmount = Math.floor(500 * coinMultiplier); secureAddCoins(rewardAmount); addText("BOSS BONUS +" + rewardAmount, e.x, e.y - 40, true, '#ffd700', true); gData.hasWon = true; save(); AudioSys.sfxExplode(); doShake(20); ePool.release(e); enemies.splice(i, 1); }
+                    if (e.hp <= 0.2) { game.boss = false; uiCache.bossHpBar.parentElement.parentElement.style.display = 'none'; game.score += 5000; game.exp += 50; let coinMultiplier = isHardcoreMode ? 1.5 : 1; let rewardAmount = Math.floor(500 * coinMultiplier); secureAddCoins(rewardAmount); addText("BOSS BONUS +" + rewardAmount, e.x, e.y - 40, true, '#ffd700', true); if (e.name === "Neural Overlord") gData.hasWon = true; save(); AudioSys.sfxExplode(); doShake(20); ePool.release(e); enemies.splice(i, 1); }
                 } else {
                     spawnParticles(e.x, e.y, e.color, 40, 2); items.push({x: e.x, y: e.y, t: 'c'}); game.score += 50; ePool.release(e); enemies.splice(i, 1);
                 }
