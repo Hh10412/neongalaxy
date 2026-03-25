@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"name="viewport">
-  <title>Neon Galaxy: Overdrive v5.7.1 - SECURE CLOUD</title>
+  <title>Neon Galaxy: Overdrive v5.7.2 - SECURE CLOUD</title>
   <meta content="yes"name="apple-mobile-web-app-capable">
   <meta content="black-translucent"name="apple-mobile-web-app-status-bar-style">
   <meta content="yes"name="mobile-web-app-capable">
@@ -172,7 +172,7 @@ skipBtn.onclick = () => {
     </div>
 
     <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>
-    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.7.1 SECURE</p>
+    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.7.2 SECURE</p>
     
     <div style="background:rgba(0,255,255,.1);border:1px solid var(--p);padding:5px 15px;border-radius:20px;font-size:12px;margin-bottom:30px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:0 0 10px rgba(0,255,255,.2) inset" onclick="openProfile()">
         <img id="menuAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=guest" style="width:26px;height:26px;border-radius:50%;background:#000"> 
@@ -996,24 +996,44 @@ function getWeekNumber(d) {
     var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
     return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
 }
-
-function initQuestData() {
+ 
+ function initQuestData() {
     if (typeof gData.tickets === 'undefined') gData.tickets = 0;
     if (typeof gData.lastFreeSpin === 'undefined') gData.lastFreeSpin = 0;
     
     let secureNow = getSecureDate();
     let today = secureNow.getFullYear() + "-" + (secureNow.getMonth() + 1) + "-" + secureNow.getDate();
     
+    // Khởi tạo 2 biến lưu stats riêng biệt cho Ngày và Tuần
     if (!gData.quests) {
-        gData.quests = { stats: { kills:0, boss:0, games:0, gold:0 }, dClaim: [], wClaim: [], lastD: today, lastW: getWeekNumber(secureNow), activeDaily: [], activeWeekly: [] };
+        gData.quests = { dailyStats: { kills:0, boss:0, games:0, gold:0 }, weeklyStats: { kills:0, boss:0, games:0, gold:0 }, dClaim: [], wClaim: [], lastD: today, lastW: getWeekNumber(secureNow), activeDaily: [], activeWeekly: [] };
     }
+    
+    // Tương thích ngược: Nếu save cũ chỉ có 'stats', tự động chuyển đổi
+    if (!gData.quests.dailyStats) gData.quests.dailyStats = gData.quests.stats || { kills:0, boss:0, games:0, gold:0 };
+    if (!gData.quests.weeklyStats) gData.quests.weeklyStats = { kills:0, boss:0, games:0, gold:0 };
+    
     if (!gData.quests.activeDaily) gData.quests.activeDaily = [];
     if (!gData.quests.activeWeekly) gData.quests.activeWeekly = [];
 }
 
-function trackQuest(type, amount) {
+// Hàm cộng điểm theo Ngày
+function trackDaily(type, amount) {
     if(!gData.quests) initQuestData();
-    if(gData.quests.stats[type] !== undefined) gData.quests.stats[type] += amount;
+    if(gData.quests.dailyStats[type] !== undefined) gData.quests.dailyStats[type] += amount;
+}
+
+// Hàm cộng điểm theo Tuần
+function trackWeek(type, amount) {
+    if(!gData.quests) initQuestData();
+    if(gData.quests.weeklyStats[type] !== undefined) gData.quests.weeklyStats[type] += amount;
+}
+
+// Giữ lại tên hàm trackQuest cũ làm "trạm trung chuyển", tự động gọi cả 2 hàm trên
+// (Cách này giúp bạn KHÔNG PHẢI SỬA code ở các chỗ rớt vàng, bắn boss...)
+function trackQuest(type, amount) {
+    trackDaily(type, amount);
+    trackWeek(type, amount);
 }
 
 let currentQuestTab = 'daily';
@@ -1034,20 +1054,20 @@ function checkQuestReset() {
         isChanged = true; 
     }
 
+    // Reset Ngày (Chỉ làm sạch dailyStats)
     if (gData.quests.lastD !== today) {
         gData.quests.dClaim = []; 
         gData.quests.lastD = today;
-        gData.quests.stats.games = 0; 
-        gData.quests.stats.kills = 0; 
-        gData.quests.stats.boss = 0; 
-        gData.quests.stats.gold = 0;
+        gData.quests.dailyStats = { games: 0, kills: 0, boss: 0, gold: 0 }; 
         gData.quests.activeDaily = generateQuests('daily', 4);
         isChanged = true;
     }
     
+    // Reset Tuần (Chỉ làm sạch weeklyStats)
     if (gData.quests.lastW !== thisWeek) {
         gData.quests.wClaim = []; 
         gData.quests.lastW = thisWeek;
+        gData.quests.weeklyStats = { games: 0, kills: 0, boss: 0, gold: 0 };
         gData.quests.activeWeekly = generateQuests('weekly', 4);
         isChanged = true;
     }
@@ -1079,7 +1099,9 @@ function renderQuests() {
     
     let activeQuests = currentQuestTab === 'daily' ? gData.quests.activeDaily : gData.quests.activeWeekly;
     let claimedArr = currentQuestTab === 'daily' ? gData.quests.dClaim : gData.quests.wClaim;
-    let stats = gData.quests.stats;
+    
+    // Đọc đúng nguồn dữ liệu tiến độ (Ngày hoặc Tuần)
+    let stats = currentQuestTab === 'daily' ? gData.quests.dailyStats : gData.quests.weeklyStats;
     
     activeQuests.forEach(q => {
         let isClaimed = claimedArr.includes(q.id);
