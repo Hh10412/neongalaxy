@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"name="viewport">
-  <title>Neon Galaxy: Overdrive v5.7.2 - SECURE CLOUD</title>
+  <title>Neon Galaxy: Overdrive v5.7.2.2 - SECURE CLOUD</title>
   <meta content="yes"name="apple-mobile-web-app-capable">
   <meta content="black-translucent"name="apple-mobile-web-app-status-bar-style">
   <meta content="yes"name="mobile-web-app-capable">
@@ -180,7 +180,7 @@ skipBtn.onclick = () => {
     </div>
 
     <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>
-    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.7.2 SECURE</p>
+    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.7.2.2 SECURE</p>
     
     <div style="background:rgba(0,255,255,.1);border:1px solid var(--p);padding:5px 15px;border-radius:20px;font-size:12px;margin-bottom:30px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:0 0 10px rgba(0,255,255,.2) inset" onclick="openProfile()">
         <img id="menuAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=guest" style="width:26px;height:26px;border-radius:50%;background:#000"> 
@@ -581,8 +581,8 @@ function getSecureDate() {
       
         enemies.forEach(e => ePool.release(e)); enemies = []; bullets.forEach(b => bPool.release(b)); bullets = []; particles.forEach(p => pPool.release(p)); particles = []; texts.forEach(t => tPool.release(t)); texts = []; items = []; trails = [];  
     
-        game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false, surviveFrames: 0 }; 
-        
+        game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false, surviveFrames: 0, lastTime: performance.now() }; 
+
         if (isEndlessMode) {
             document.getElementById('lvlContainer').style.display = 'none'; document.getElementById('hudTimer').style.display = 'block';
         } else {
@@ -618,10 +618,23 @@ function getSecureDate() {
 
     function doShake(amt) { game.shake = Math.min(amt, 30); }  
       
-    function loop() {  
-        if(isEndlessMode && !game.boss) {
-    game.surviveFrames++;
-    if(game.surviveFrames % 3600 === 0) { 
+    function loop(timestamp) {  
+    if(state !== 'PLAYING') return; 
+    requestAnimationFrame(loop); 
+
+    // --- CƠ CHẾ CÂN BẰNG TỐC ĐỘ (CAP TẠI 60 FPS) ---
+    if (!timestamp) timestamp = performance.now();
+    let dt = timestamp - (game.lastTime || 0);
+    // 16.66ms tương đương với 60 Frames/Giây. Nếu frame xuất hiện sớm hơn, ta bỏ qua không xử lý.
+    if (dt < 16.66) return; 
+    // Trừ đi số dư để frame sau mượt mà hơn
+    game.lastTime = timestamp - (dt % 16.66);
+    // ----------------------------------------------
+
+    // (Phần code bên dưới giữ nguyên)
+    if(isEndlessMode && !game.boss) {
+        game.surviveFrames++;
+        if(game.surviveFrames % 3600 === 0) { 
         game.lvl++; 
         if(game.lvl % 5 === 0) {
             trackQuest('games', 1); 
