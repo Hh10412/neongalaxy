@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"name="viewport">
-  <title>Neon Galaxy: Overdrive v5.7.2.2 - SECURE CLOUD</title>
+  <title>Neon Galaxy: Overdrive v5.8 - SECURE CLOUD</title>
   <meta content="yes"name="apple-mobile-web-app-capable">
   <meta content="black-translucent"name="apple-mobile-web-app-status-bar-style">
   <meta content="yes"name="mobile-web-app-capable">
@@ -168,26 +168,43 @@ skipBtn.onclick = () => {
     <div style="display:flex;flex-direction:column;align-items:center"><button class="btn-main"onclick="executeChangePass()"style="width:200px;margin-bottom:10px">LƯU THAY ĐỔI</button> <button class="btn-main"onclick="closeChangePass()"style="background:#333;color:#fff;width:200px;border:1px solid #555">HỦY BỎ</button></div>
   </div>
     <div class="hidden overlay" id="menuScreen">
-    <div style="position:absolute; top:20px; left:20px; display:flex; gap:15px; z-index:100;">
-        <div id="btnGacha" onclick="openGacha()" style="position:relative; width:55px; height:55px; background:rgba(10,5,5,0.9); border:2px solid var(--p); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 0 15px rgba(0,255,255,0.3); transition:0.2s;">
+    
+    <div style="position:absolute; top:20px; left:20px; width:calc(100% - 40px); display:flex; align-items:center; z-index:100;">
+        
+        <!-- Gacha (bên trái) -->
+        <div id="btnGacha" onclick="openGacha()" 
+            style="position:relative; width:55px; height:55px; background:rgba(10,5,5,0.9); border:2px solid var(--p); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 0 15px rgba(0,255,255,0.3); transition:0.2s;">
+            
             <span style="font-size:24px; filter:drop-shadow(0 0 5px var(--p));">🎁</span>
-            <span id="gachaTimerBadge" style="position:absolute; bottom:-10px; background:var(--bg); color:var(--p); font-size:9px; padding:2px 5px; border:1px solid var(--p); border-radius:5px; white-space:nowrap;">SẴN SÀNG</span>
+            
+            <span id="gachaTimerBadge" 
+                style="position:absolute; bottom:-10px; background:var(--bg); color:var(--p); font-size:9px; padding:2px 5px; border:1px solid var(--p); border-radius:5px; white-space:nowrap;">
+                SẴN SÀNG
+            </span>
         </div>
-        <div id="btnQuest" onclick="openQuests()" style="position:relative; width:55px; height:55px; background:rgba(10,5,5,0.9); border:2px solid var(--gold); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 0 15px rgba(255,215,0,0.3); transition:0.2s;">
+
+        <!-- Quest (bên phải) -->
+        <div id="btnQuest" onclick="openQuests()" 
+            style="margin-left:auto; position:relative; width:55px; height:55px; background:rgba(10,5,5,0.9); border:2px solid var(--gold); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 0 15px rgba(255,215,0,0.3); transition:0.2s;">
+            
             <span style="font-size:24px; filter:drop-shadow(0 0 5px var(--gold));">📜</span>
-            <span id="questBadge" style="position:absolute; bottom:-10px; background:var(--bg); color:var(--gold); font-size:9px; padding:2px 5px; border:1px solid var(--gold); border-radius:5px; white-space:nowrap;">NHIỆM VỤ</span>
+            
+            <span id="questBadge" 
+                style="position:absolute; bottom:-10px; background:var(--bg); color:var(--gold); font-size:9px; padding:2px 5px; border:1px solid var(--gold); border-radius:5px; white-space:nowrap;">
+                NHIỆM VỤ
+            </span>
         </div>
     </div>
-
-    <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>
-    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.7.2.2 SECURE</p>
+    <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>    
+    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.8 SECURE</p>
     
     <div style="background:rgba(0,255,255,.1);border:1px solid var(--p);padding:5px 15px;border-radius:20px;font-size:12px;margin-bottom:30px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:0 0 10px rgba(0,255,255,.2) inset" onclick="openProfile()">
         <img id="menuAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=guest" style="width:26px;height:26px;border-radius:50%;background:#000"> 
         <span>Phi công: <b id="menuUsername" style="color:var(--gold)">GUEST</b></span>
     </div>
     
-    <button class="btn-main" onclick="openEquip()">TRANG BỊ (GEAR)</button> 
+    <button class="btn-main" onclick="openEquip()">TRANG BỊ (GEAR)</button>
+   <button class="btn-main btn-sec" onclick="openCrafting()" style="border-color: var(--gold); color: var(--gold);">TRẠM LẮP RÁP CỔ ĐẠI</button> 
     <button class="btn-main btn-sec" onclick="openShop()">NÂNG CẤP (UPGRADE)</button>
     <div style="display:flex;gap:10px"><button class="btn-main btn-small"onclick="openLeaderboard()"style="background:#333;color:#fff">🏆 BẢNG XẾP HẠNG</button> <button class="btn-main btn-small"onclick="window.AuthSys.openSwitchAccount()"style="background:#333;color:var(--r)">🔄 ĐỔI TÀI KHOẢN</button></div>
     <div style="height:20px"></div>
@@ -313,6 +330,42 @@ skipBtn.onclick = () => {
       </div>
     </div>
   </div>
+    <div class="hidden overlay" id="craftScreen" style="z-index: 2100; overflow-y: auto; background: rgba(5, 5, 10, 0.95); border: 2px solid #ff8c00; box-shadow: inset 0 0 80px rgba(255,140,0,0.15); font-family: monospace;">
+    <div style="position:absolute; top:0; left:0; right:0; bottom:0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,140,0,0.05) 3px, rgba(255,140,0,0.05) 3px); pointer-events: none; z-index:-1;"></div>
+
+    <h2 style="color:#ff8c00; text-shadow:0 0 10px #ff8c00; letter-spacing: 2px; border-bottom: 1px dashed #ff8c00; padding-bottom: 10px; width: 90%; text-align: center; margin-top: 20px;">[ TRẠM LẮP RÁP CỔ ĐẠI ]</h2>
+    
+    <div style="font-size:12px; color:#0ff; margin-bottom: 15px; background: rgba(0, 255, 255, 0.05); padding: 12px; border-radius: 3px; border-left: 4px solid #0ff; width: 85%; max-width: 400px; box-shadow: 0 0 10px rgba(0,255,255,0.1);">
+        <div style="color:#fff; margin-bottom: 8px;">> QUÉT KHO PHẾ LIỆU... [OK]</div>
+        <div style="display:flex; justify-content: space-between; margin-top: 5px; color: #aaa;">
+            <span>⚙️ Kim loại: <b id="txtScrap" style="color:#fff; text-shadow:0 0 5px #fff;">0</b></span>
+            <span>🔋 Lõi Plasma: <b id="txtPlasma" style="color:#0ff; text-shadow:0 0 5px #0ff;">0</b></span>
+        </div>
+        <div style="display:flex; justify-content: space-between; margin-top: 5px; color: #aaa;">
+            <span>💎 Tinh thể: <b id="txtCrystal" style="color:#f0f; text-shadow:0 0 5px #f0f;">0</b></span>
+            <span>🌌 Hạt Hư vô: <b id="txtVoid" style="color:#b200ff; text-shadow:0 0 5px #b200ff;">0</b></span>
+        </div>
+    </div>
+    
+    <div style="width:90%; max-width:400px; text-align:left; margin:10px 0 5px; color:#ff8c00; font-size:11px; letter-spacing:1px;">// MÃ HÓA THẺ LÕI //</div>
+    <div class="grid-box" style="display:flex; flex-direction:column; width:90%; max-width:400px; border: 1px solid #333; padding: 10px; background: rgba(0,0,0,0.6); gap: 8px;">
+        <button class="btn-main btn-small" onclick="craftCard('card_bronze', 50, 0, 0, 0)" style="border: 1px solid #cd7f32; color:#cd7f32; background: transparent; display:flex; justify-content:space-between; padding: 8px 35px;">
+            <span>[ÉP] Thẻ Đồng (-50⚙️)</span> <span>Kho: <b id="txtCB">0</b></span>
+        </button>
+        <button class="btn-main btn-small" onclick="craftCard('card_silver', 100, 20, 0, 0)" style="border: 1px solid #c0c0c0; color:#c0c0c0; background: transparent; display:flex; justify-content:space-between; padding: 8px 35px;">
+            <span>[ÉP] Thẻ Bạc (-100⚙️ -20🔋)</span> <span>Kho: <b id="txtCS">0</b></span>
+        </button>
+        <button class="btn-main btn-small" onclick="craftCard('card_gold', 0, 50, 10, 0)" style="border: 1px solid #ffd700; color:#ffd700; background: transparent; display:flex; justify-content:space-between; padding: 8px 35px;">
+            <span>[ÉP] Thẻ Vàng (-50🔋 -10💎)</span> <span>Kho: <b id="txtCG">0</b></span>
+        </button>
+    </div>
+
+    <div style="width:90%; max-width:400px; text-align:left; margin:20px 0 5px; color:#ff8c00; font-size:11px; letter-spacing:1px;">// KHÔI PHỤC CÔNG NGHỆ THẤT TRUYỀN //</div>
+    <div id="hiddenSkillsGrid" style="display:flex; flex-direction:column; gap:10px; width:90%; max-width:400px;"></div>
+
+    <button class="btn-main" onclick="closeCrafting()" style="margin-top:25px; margin-bottom: 30px; background: repeating-linear-gradient(45deg, #222, #222 10px, #111 10px, #111 20px); border: 2px solid #555; color:#fff; letter-spacing: 2px;">QUAY LẠI</button>
+</div>
+
   <script type="module">
     let isFirebaseLoaded = false; let isOfflineTriggered = false; let realTimeTracker = 0; let lastSystemTime = Date.now(); let isTimeValid = true;
     setInterval(() => {
@@ -411,7 +464,7 @@ function getSecureDate() {
         get() { return this.pool.length > 0 ? this.pool.pop() : null; } release(obj) { this.pool.push(obj); }
     }
     
-    const ePool = new ObjectPool(() => ({}), 20); const pPool = new ObjectPool(() => ({}), 300); const bPool = new ObjectPool(() => ({}), 100); const tPool = new ObjectPool(() => ({}), 20);
+    const ePool = new ObjectPool(() => ({}), 20); const pPool = new ObjectPool(() => ({}), 300); const bPool = new ObjectPool(() => ({}), 100); const tPool = new ObjectPool(() => ({}), 50);
     
     const BULLET_PATTERNS = { SPREAD: 'spread', LASER: 'laser', SPIRAL: 'spiral', HOMING: 'homing', WAVE: 'wave' };
     function pickRandomWeapons(allowedTypes, slotCount) { const shuffled = [...allowedTypes].sort(() => 0.5 - Math.random()); return shuffled.slice(0, Math.min(slotCount, allowedTypes.length)); }
@@ -569,19 +622,54 @@ function getSecureDate() {
     function addText(val, x, y, isCrit = false, customColor = null, big = false) { let t = tPool.get(); t.text = val; t.x = x + (Math.random()*20-10); t.y = y; t.life = 1.0; t.color = customColor || (isCrit ? '#ffcc00' : '#fff'); t.size = big ? 24 : (isCrit ? 20 : 14); t.vy = isCrit ? -2 : -1; texts.push(t); }  
       
     function startGame() {  
+    document.getElementById('bossHud').style.display = 'none';
         syncServerTime(); 
         enterFullScreen(); 
+        if (!gData.inventory) {
+    gData.inventory = { mat_scrap: 0, mat_plasma: 0, mat_crystal: 0, mat_void: 0, card_bronze: 0, card_silver: 0, card_gold: 0, card_plat: 0 };
+}
+if (!gData.hiddenSkills) {
+    gData.hiddenSkills = { 
+        aura: { unlockedBlueprint: false, activated: false }, 
+        nano: { unlockedBlueprint: false, activated: false }, 
+        overclock: { unlockedBlueprint: false, activated: false }, 
+        aegis: { unlockedBlueprint: false, activated: false } 
+    };
+}
+
         if (AudioSys.enabled) { AudioSys.init(); if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume(); AudioSys.playBGM(); }
           
         state = 'PLAYING'; document.querySelectorAll('.overlay').forEach(e => e.classList.add('hidden')); document.getElementById('uiLayer').classList.remove('hidden');  
         const hull = EQUIP_DB.hulls[gData.equip.h]; const upHP = (gData.stats.hp || 0) * 50;  
           
-        player = { x: W/2, y: H-150, r: 15, hp: 100 + hull.hp + upHP, maxHp: 100 + hull.hp + upHP, atk: 10 * (1 + (gData.stats.atk||0) * 0.1), spd: 0.12 + hull.spd, crit: (gData.stats.crit || 0) * 0.05, magRadius: 100 + (gData.stats.mag || 0) * 40, wep: gData.equip.w, fr: 0, nextFr: EQUIP_DB.weapons[gData.equip.w].fr || 12, mult: 1, invuln: 0 };  
+        let cardHp = (gData.inventory.card_bronze * 5) + (gData.inventory.card_silver * 15);
+let cardAtkMult = (gData.inventory.card_bronze * 0.02) + (gData.inventory.card_silver * 0.05) + (gData.inventory.card_gold * 0.1) + (gData.inventory.card_plat * 0.2);
+let cardCrit = (gData.inventory.card_gold * 0.03);
+
+let totalAtk = 10 * (1 + (gData.stats.atk||0) * 0.1 + cardAtkMult);
+let totalHp = 100 + hull.hp + upHP + cardHp;
+
+player = { 
+    x: W/2, y: H-150, r: 15, 
+    hp: totalHp, maxHp: totalHp, 
+    atk: totalAtk, 
+    spd: 0.12 + hull.spd, 
+    crit: ((gData.stats.crit || 0) * 0.05) + cardCrit, 
+    magRadius: 100 + (gData.stats.mag || 0) * 40, 
+    wep: gData.equip.w, fr: 0, nextFr: EQUIP_DB.weapons[gData.equip.w].fr || 12, mult: 1 + (gData.inventory.card_plat > 0 ? 1 : 0), invuln: 0 
+};  
+
+// Logic Kỹ năng Ẩn: Overclock (Quá tải)
+if(gData.hiddenSkills.overclock.activated) {
+    player.nextFr = Math.floor(player.nextFr * 0.5); // Bắn x2 tốc độ ngay từ đầu
+    player.atk *= 1.5;
+}
+
         const firerates = {w2:35, w3:45, w4:50, w5:5, w6:35, w7:60, w8:15}; if(firerates[player.wep]) player.nextFr = firerates[player.wep];
       
         enemies.forEach(e => ePool.release(e)); enemies = []; bullets.forEach(b => bPool.release(b)); bullets = []; particles.forEach(p => pPool.release(p)); particles = []; texts.forEach(t => tPool.release(t)); texts = []; items = []; trails = [];  
     
-        game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false, surviveFrames: 0, lastTime: performance.now() }; 
+        game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false, surviveFrames: 0, lastTime: performance.now(), activeEvent: null, pendingEventRoll: false }; 
 
         if (isEndlessMode) {
             document.getElementById('lvlContainer').style.display = 'none'; document.getElementById('hudTimer').style.display = 'block';
@@ -647,7 +735,28 @@ function getSecureDate() {
         if(state !== 'PLAYING') return; requestAnimationFrame(loop); game.frame++;  
         ctx.save();  
         if(game.shake > 0) { ctx.translate((Math.random()-0.5)*game.shake, (Math.random()-0.5)*game.shake); game.shake *= 0.85; if(game.shake < 0.5) game.shake = 0; }  
-        ctx.fillStyle = '#050508'; ctx.fillRect(-20,-20,W+40,H+40); 
+        // Xử lý kích hoạt sự kiện sau khi lên cấp (chờ Boss chết mới chạy)
+if (game.pendingEventRoll && !game.boss) {
+    game.pendingEventRoll = false;
+    if (Math.random() < 0.1) { // 10% tỷ lệ xảy ra sự kiện
+        game.activeEvent = Math.random() < 0.5 ? 'meteor' : 'supply';
+        let alertColor = game.activeEvent === 'meteor' ? '#ff4444' : '#00ffff';
+        let alertText = game.activeEvent === 'meteor' ? "BÃO THIÊN THẠCH" : "HẠM ĐỘI TIẾP TẾ";
+        addText("CẢNH BÁO: " + alertText, W/2, H/2, true, alertColor, true);
+        
+        // Còi báo động (Tít... Tít...)
+        AudioSys.playTone(400, 'square', 0.4, 0.4, 300); 
+        setTimeout(() => AudioSys.playTone(400, 'square', 0.4, 0.4, 300), 500);
+    }
+}
+
+// Đổi màu nền nếu đang có sự kiện
+let bgFill = '#050508';
+if (game.activeEvent === 'meteor') bgFill = '#1a0505'; // Nền hơi đỏ tía
+else if (game.activeEvent === 'supply') bgFill = '#051a1a'; // Nền hơi xanh lơ
+ctx.fillStyle = bgFill; 
+ctx.fillRect(-20,-20,W+40,H+40); 
+
           
         ctx.fillStyle = '#fff';  
         stars.forEach(st => { st.y += st.s * st.layer + (game.flash > 0 ? 15 : 0); if(st.y > H) { st.y = 0; st.x = Math.random()*W; } ctx.globalAlpha = st.layer === 2 ? 1 : 0.4; let sz = st.r * st.layer * 2; ctx.fillRect(st.x - sz/2, st.y - sz/2, sz, sz); }); ctx.globalAlpha = 1;  
@@ -666,7 +775,34 @@ function getSecureDate() {
         ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(18,15); ctx.lineTo(0,10); ctx.lineTo(-18,15); ctx.fill();  
         ctx.fillStyle = '#fff'; ctx.fillRect(-2,-2,4,4); ctx.restore(); ctx.globalAlpha = 1;  
     
-        if(game.frame % player.nextFr === 0) fire(); if(game.frame % Math.max(60, 100 - game.lvl*2) === 0 && !game.boss) spawnEnemy();  
+        if(game.frame % player.nextFr === 0) fire(); if(game.frame % Math.max(60, 100 - game.lvl*2) === 0 && !game.boss) {
+    // Nếu có sự kiện, 25% quái sinh ra sẽ là quái sự kiện
+    if (game.activeEvent && Math.random() < 0.25) {
+        let e = ePool.get();
+        if (e) {
+            if (game.activeEvent === 'meteor') {
+                Object.assign(e, { type: 'meteor', x: Math.random()*(W-50)+25, y: -50, r: 25, hp: 100 + game.lvl*5, maxHp: 100 + game.lvl*5, s: 2 + Math.random()*2, color: '#aaaaaa', angle: 0 });
+            } else {
+                Object.assign(e, { type: 'supply', x: Math.random()*(W-40)+20, y: -50, r: 20, hp: 500 + game.lvl*20, maxHp: 500 + game.lvl*20, s: 4, color: '#00ffff', angle: 0 });
+            }
+            e.baseX = e.x;
+            enemies.push(e);
+        }
+    } else {
+        spawnEnemy(); // 75% còn lại vẫn ra quái thường
+    }
+}
+ 
+        
+// Logic Kỹ Năng Ẩn: Black Hole Aura
+if(gData.hiddenSkills.aura.activated) {
+    ctx.beginPath(); ctx.arc(player.x, player.y, player.magRadius * 1.5, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(178, 0, 255, 0.2)'; ctx.lineWidth = 2; ctx.stroke();
+    player.magRadius = 250; // Hút cực xa
+    // Làm chậm đạn địch
+    bullets.forEach(b => { if(b.isEnemy && Math.hypot(b.x-player.x, b.y-player.y) < 150) { b.vx*=0.95; b.vy*=0.95; } });
+}
+
         updateBullets(); updateEnemies(); updateParticles(); updateItems(); updateTexts(); AudioSys.updateButtons();
       
         if(game.flash > 0) { ctx.fillStyle = `rgba(255, 255, 255, ${game.flash})`; ctx.fillRect(-20,-20,W+40,H+40); game.flash -= 0.05; }  
@@ -790,22 +926,76 @@ function getSecureDate() {
                     if(b.type !== 'pierce') { bPool.release(b); bullets.splice(j,1); }  
     
                     if(e.hp < 0.2) {   
-                        const coinMultiplier = isHardcoreMode ? 1.5 : 1; let rewardAmount = 0;
-                        game.ult = Math.min(100, game.ult + (e.type==='tank'?8:4)); AudioSys.sfxExplode(); doShake(e.type==='tank'?10:4); spawnParticles(e.x, e.y, e.color, e.type==='tank'?35:20);
+                        // Nếu là quái sự kiện
+if(e.type === 'meteor' || e.type === 'supply') {
+    if (e.type === 'meteor') {
+        AudioSys.playNoise(0.15); // Tiếng "đùm" ngắn, vừa tai, không điếc tai
+        doShake(5); // Rung nhẹ hơn tàu tiếp tế
+        
+        // Cột bụi bốc thẳng lên trên (không lan ra 4 phía che màn hình)
+        for(let p_i=0; p_i<15; p_i++) {
+            let p = pPool.get();
+            if(p) {
+                p.x = e.x + (Math.random()*20-10);
+                p.y = e.y;
+                p.color = '#777777';
+                p.vx = (Math.random()-0.5) * 1.5; // Tạt ngang rất ít
+                p.vy = -Math.random() * 5 - 2; // Bay thốc lên trên
+                p.life = 1.0; p.decay = 0.05; p.size = Math.random()*4+2;
+                particles.push(p);
+            }
+        }
+    } else {
+        AudioSys.sfxExplode(); spawnParticles(e.x, e.y, e.color, 30); doShake(10);
+    }
+
+    // Rớt nguyên liệu chế tạo (Rate cao)
+    let mType = 'mat_scrap';
+    let r = Math.random();
+    if(e.type === 'supply') { if(r<0.1) mType = 'mat_void'; else if(r<0.3) mType = 'mat_crystal'; else mType = 'mat_plasma'; }
+    else { if(r<0.1) mType = 'mat_crystal'; else if(r<0.3) mType = 'mat_plasma'; }
     
-                        if(e.type === 'boss') { 
-                            trackQuest('boss', 1); // Thêm ở đây khi Boss thực sự chết
-                            game.boss = false; uiCache.bossHpBar.parentElement.parentElement.style.display='none'; 
-                            rewardAmount = Math.floor(500 * coinMultiplier); secureAddCoins(rewardAmount);
-                            addText("BOSS BONUS +" + rewardAmount, e.x, e.y - 40, true, '#ffd700', true);
-                            if (e.name === "Neural Overlord") gData.hasWon = true; save();
-                        } else { 
-                            trackQuest('kills', 1); // Thêm ở đây khi quái thường chết
-                            game.score += (e.type==='tank'?400:150); rewardAmount = Math.floor(20 * coinMultiplier);
-                            let rngDrop = Math.random();
-                            if(rngDrop < 0.015) { items.push({x:e.x, y:e.y, t: 'b'}); } else if(rngDrop < 0.035) { items.push({x:e.x, y:e.y, t: 's'}); } else if(rngDrop < (player.hp < player.maxHp * 0.35 ? 0.3 : 0.05)) { items.push({x:e.x, y:e.y, t: 'h'}); } else if(rngDrop > (0.9 - (gData.stats.luck||0)*0.05)) { if (isEndlessMode) items.push({x: e.x, y: e.y, t: 'c', val: rewardAmount}); else items.push({x:e.x, y:e.y, t: 'x'}); } else { items.push({x: e.x, y: e.y, t: 'c', val: rewardAmount}); }
-                        }
-                        ePool.release(e); enemies.splice(i,1); break;   
+    items.push({x: e.x, y: e.y, t: 'mat', mType: mType});
+    ePool.release(e); enemies.splice(i,1); break;
+}
+
+const coinMultiplier = isHardcoreMode ? 1.5 : 1; let rewardAmount = 0;
+game.ult = Math.min(100, game.ult + (e.type==='tank'?8:4)); AudioSys.sfxExplode(); doShake(e.type==='tank'?10:4); spawnParticles(e.x, e.y, e.color, e.type==='tank'?35:20);
+
+if(e.type === 'boss') { 
+    trackQuest('boss', 1);
+    game.boss = false; uiCache.bossHpBar.parentElement.parentElement.style.display='none'; 
+    
+    // --- LOGIC MỚI: Đánh bại Boss ở mốc level nhất định chắc chắn rơi Bản thiết kế ---
+    let bpType = null;
+    if (game.lvl === 10 && !gData.hiddenSkills.aura.unlockedBlueprint) bpType = 'aura';
+    else if (game.lvl === 20 && !gData.hiddenSkills.nano.unlockedBlueprint) bpType = 'nano';
+    else if (game.lvl === 30 && !gData.hiddenSkills.overclock.unlockedBlueprint) bpType = 'overclock';
+    else if (game.lvl === 40 && !gData.hiddenSkills.aegis.unlockedBlueprint) bpType = 'aegis';
+    
+    if(bpType) items.push({x: e.x, y: e.y, t: 'bp', bpId: bpType});
+    // ---------------------------------------------------------------------------------
+
+    rewardAmount = Math.floor(500 * coinMultiplier); secureAddCoins(rewardAmount);
+    addText("BOSS BONUS +" + rewardAmount, e.x, e.y - 40, true, '#ffd700', true);
+    if (e.name === "Neural Overlord") gData.hasWon = true; save();
+} else { 
+    trackQuest('kills', 1); 
+    game.score += (e.type==='tank'?400:150); rewardAmount = Math.floor(20 * coinMultiplier);
+    let rngDrop = Math.random();
+    // Thêm tỷ lệ rớt Thẻ (Card)
+    if (rngDrop < 0.0005) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_plat'}); }
+    else if (rngDrop < 0.001) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_gold'}); }
+    else if (rngDrop < 0.005) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_silver'}); }
+    else if (rngDrop < 0.01) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_bronze'}); }
+    else if(rngDrop < 0.025) { items.push({x:e.x, y:e.y, t: 'b'}); } 
+    else if(rngDrop < 0.045) { items.push({x:e.x, y:e.y, t: 's'}); } 
+    else if(rngDrop < (player.hp < player.maxHp * 0.35 ? 0.3 : 0.06)) { items.push({x:e.x, y:e.y, t: 'h'}); } 
+    else if(rngDrop > (0.9 - (gData.stats.luck||0)*0.05)) { if (isEndlessMode) items.push({x: e.x, y: e.y, t: 'c', val: rewardAmount}); else items.push({x:e.x, y:e.y, t: 'x'}); } 
+    else { items.push({x: e.x, y: e.y, t: 'c', val: rewardAmount}); }
+}
+ePool.release(e); enemies.splice(i,1); break;
+
                     }
                 }  
             }  
@@ -818,12 +1008,17 @@ function getSecureDate() {
     function updateTexts() { ctx.textAlign = "center"; for(let i=texts.length-1; i>=0; i--) { let t = texts[i]; t.y += t.vy; t.life -= 0.03; if(t.life <= 0) { tPool.release(t); texts.splice(i,1); continue; } ctx.fillStyle = t.color; ctx.globalAlpha = Math.max(0, t.life); ctx.font = `bold ${t.size}px Orbitron`; ctx.fillText(t.text, t.x, t.y); } ctx.globalAlpha = 1; ctx.textAlign = "left"; }  
     
     function updateItems() { 
+    const MAT_COLORS = {mat_scrap: '#aaa', mat_plasma: '#0ff', mat_crystal: '#f0f', mat_void: '#800080'};
         ctx.font = "20px Arial"; ctx.textAlign = "center"; 
         for(let i=items.length-1; i>=0; i--) { 
             let it = items[i]; let dx=it.x-player.x, dy=it.y-player.y, distSq = dx*dx + dy*dy; 
             if(distSq < player.magRadius*player.magRadius) { it.x += (player.x - it.x)*0.15; it.y += (player.y - it.y)*0.15; } else { it.y += 2; }
             let icon = '💰'; ctx.fillStyle = '#ffd700'; 
             if(it.t === 'x') { icon = '💠'; ctx.fillStyle = '#0ff'; } if(it.t === 'h') { icon = '💚'; ctx.fillStyle = '#0f0'; } if(it.t === 's') { icon = '🛡️'; ctx.fillStyle = '#0ff'; } if(it.t === 'b') { icon = '💣'; ctx.fillStyle = '#f00'; } 
+            else if(it.t === 'mat') { icon = '⚙️'; ctx.fillStyle = MAT_COLORS[it.mType]; }
+else if(it.t === 'card') { icon = '🃏'; ctx.fillStyle = it.cType.includes('plat') ? '#b200ff' : (it.cType.includes('gold') ? '#ffff00' : '#fff'); }
+else if(it.t === 'bp') { icon = '📜'; ctx.fillStyle = '#ff00ff'; }
+
             ctx.fillText(icon, it.x, it.y); 
             if(distSq < 900) { 
                 if(it.t==='c') { let amount = it.val || 20; secureAddCoins(amount); AudioSys.sfxCoin(); addText("+" + amount, player.x, player.y-20, false, '#ffd700'); }
@@ -831,6 +1026,18 @@ function getSecureDate() {
                 else if(it.t==='h') { let heal = Math.floor(player.maxHp * 0.15); player.hp = Math.min(player.maxHp, player.hp + heal); AudioSys.sfxHeal(); addText("+" + heal, player.x, player.y-25, false, '#0f0'); } 
                 else if(it.t==='s') { player.invuln = 300; addText("SHIELD!", player.x, player.y-25, true, '#0ff', true); AudioSys.playTone(800, 'sine', 0.5); }
                 else if(it.t==='b') { enemies.forEach(en => { en.hp -= player.atk*20; spawnParticles(en.x, en.y, '#ffaa00', 10); }); for(let j=bullets.length-1; j>=0; j--) { if(bullets[j].isEnemy) { bPool.release(bullets[j]); bullets.splice(j,1); } } doShake(20); game.flash = 0.8; addText("NUKE!", player.x, player.y-25, true, '#ff0000', true); AudioSys.sfxExplode(); }
+                else if(it.t==='mat') { 
+    gData.inventory[it.mType]++; 
+    addText("+1 Nguyên liệu", player.x, player.y-25, false, MAT_COLORS[it.mType]); 
+}
+else if(it.t==='card') { 
+    gData.inventory[it.cType]++; 
+    addText("THẺ NÂNG CẤP!", player.x, player.y-25, true, '#ffff00'); AudioSys.playTone(800, 'sine', 0.5); 
+}
+else if(it.t==='bp') { 
+    gData.hiddenSkills[it.bpId].unlockedBlueprint = true; save();
+    addText("BẢN THIẾT KẾ ẨN!", player.x, player.y-35, true, '#ff00ff', true); AudioSys.playTone(1000, 'sawtooth', 0.8);
+}
                 items.splice(i,1); 
             }        
         } ctx.textAlign = "left"; 
@@ -843,6 +1050,9 @@ function getSecureDate() {
         game.nextExp *= 1.4; 
         game.lvl++; 
         
+        game.activeEvent = null; // Tắt sự kiện của cấp cũ
+        game.pendingEventRoll = true; // Sẵn sàng roll sự kiện cho cấp mới
+        
         // Gộp trackQuest và spawnBoss vào chung điều kiện mỗi 5 level
         if(game.lvl % 5 === 0) {
             trackQuest('games', 1); 
@@ -853,6 +1063,7 @@ function getSecureDate() {
         showLvlUp(); 
     } 
 }
+
     function showLvlUp() { const screen = document.getElementById('lvlScreen'), con = document.getElementById('skillContainer'); screen.classList.remove('hidden'); con.innerHTML = ''; const skills = [ {n:'TĂNG HỎA LỰC', d:'+20% Sát thương', f:()=>{player.atk*=1.2}}, {n:'SÚNG KÉP', d:'Tăng lượng đạn', f:()=>{player.mult++}}, {n:'SỬA CHỮA', d:'Hồi 50% Máu', f:()=>{player.hp = Math.min(player.maxHp, player.hp+(player.maxHp*0.5))}}, {n:'TĂNG TỐC', d:'Tốc độ x1.2', f:()=>{player.spd*=1.2}}, {n:'NẠP SIÊU NHANH', d:'Tốc độ bắn x1.6', f:()=>{ player.nextFr = Math.max(3, Math.floor(player.nextFr * 0.6)); }} ]; skills.sort(()=>Math.random()-0.5).slice(0,3).forEach(s => { let btn = document.createElement('button'); btn.className = 'btn-main'; btn.style = 'width:130px; height:150px; font-size:12px; border:2px solid var(--p); display:flex; flex-direction:column; justify-content:center; align-items:center; box-shadow: 0 0 15px rgba(0,255,255,0.2) inset;'; btn.innerHTML = `<b style="font-size:16px;color:var(--y);margin-bottom:15px;text-align:center;">${s.n}</b><span style="color:#aaa;text-align:center;">${s.d}</span>`; btn.onclick = () => { s.f(); screen.classList.add('hidden'); state = 'PLAYING'; loop(); }; con.appendChild(btn); }); }  
     
     function tryUlt() { 
@@ -1250,6 +1461,62 @@ function claimQuest(qId, tab) {
     setInterval(window.updateMenuGachaBadge, 1000);
 
     window.startGame = startGame; window.togglePause = togglePause; window.buyUpgrade = buyUpgrade; 
+    window.openCrafting = function() {
+    document.getElementById('menuScreen').classList.add('hidden');
+    document.getElementById('craftScreen').classList.remove('hidden');
+    updateCraftingUI();
+};
+window.closeCrafting = function() {
+    document.getElementById('craftScreen').classList.add('hidden');
+    document.getElementById('menuScreen').classList.remove('hidden');
+};
+
+function updateCraftingUI() {
+    document.getElementById('txtScrap').innerText = gData.inventory.mat_scrap;
+    document.getElementById('txtPlasma').innerText = gData.inventory.mat_plasma;
+    document.getElementById('txtCrystal').innerText = gData.inventory.mat_crystal;
+    document.getElementById('txtVoid').innerText = gData.inventory.mat_void;
+    document.getElementById('txtCB').innerText = gData.inventory.card_bronze;
+    document.getElementById('txtCS').innerText = gData.inventory.card_silver;
+    document.getElementById('txtCG').innerText = gData.inventory.card_gold;
+
+    let skillHTML = "";
+    const skillsDef = [
+        { id: 'aura', n: 'Trường Lực Hút', d: 'Hút cực rộng, làm chậm đạn địch', req: [0, 100, 10, 0] },
+        { id: 'nano', n: 'Bầy Nanobot', d: 'Hồi máu khi giết địch', req: [0, 200, 30, 0] },
+        { id: 'overclock', n: 'Giao Thức Quá Tải', d: 'X2 Sát thương & Tốc đánh', req: [0, 0, 50, 10] },
+        { id: 'aegis', n: 'Khiên Lượng Tử', d: 'Chặn sát thương chí mạng', req: [0, 0, 100, 50] }
+    ];
+
+    skillsDef.forEach(s => {
+        let sk = gData.hiddenSkills[s.id];
+        if(!sk.unlockedBlueprint) {
+            skillHTML += `<div style="padding:10px; border:1px dashed #555; text-align:center; color:#555;">Kỹ năng ??? (Cần Bản thiết kế từ Boss)</div>`;
+        } else if (sk.activated) {
+            skillHTML += `<div style="padding:10px; border:1px solid #0f0; background:rgba(0,255,0,0.1); text-align:center; color:#0f0;"><b>${s.n}</b><br><span style="font-size:10px;">Đã kích hoạt</span></div>`;
+        } else {
+            skillHTML += `<button class="btn-main btn-sec" style="font-size:11px;" onclick="unlockSkill('${s.id}', ${s.req[0]}, ${s.req[1]}, ${s.req[2]}, ${s.req[3]})">MỞ KHÓA: ${s.n}<br><span style="font-size:9px;">Cần: ${s.req[1]} Plasma, ${s.req[2]} Crystal, ${s.req[3]} Void</span></button>`;
+        }
+    });
+    document.getElementById('hiddenSkillsGrid').innerHTML = skillHTML;    
+}
+
+window.craftCard = function(cType, sc, pl, cr, vo) {
+    if(gData.inventory.mat_scrap >= sc && gData.inventory.mat_plasma >= pl && gData.inventory.mat_crystal >= cr && gData.inventory.mat_void >= vo) {
+        gData.inventory.mat_scrap -= sc; gData.inventory.mat_plasma -= pl; gData.inventory.mat_crystal -= cr; gData.inventory.mat_void -= vo;
+        gData.inventory[cType]++;
+        save(); updateCraftingUI(); alert("Chế tạo thành công!");
+    } else alert("Không đủ nguyên liệu!");
+};
+
+window.unlockSkill = function(id, sc, pl, cr, vo) {
+    if(gData.inventory.mat_scrap >= sc && gData.inventory.mat_plasma >= pl && gData.inventory.mat_crystal >= cr && gData.inventory.mat_void >= vo) {
+        gData.inventory.mat_scrap -= sc; gData.inventory.mat_plasma -= pl; gData.inventory.mat_crystal -= cr; gData.inventory.mat_void -= vo;
+        gData.hiddenSkills[id].activated = true;
+        save(); updateCraftingUI(); alert("Đã kích hoạt kỹ năng tối mật!");
+    } else alert("Không đủ nguyên liệu!");
+};
+
         // Gắn các hàm Gacha và Quest vào global window
     window.openGacha = openGacha; 
     window.closeGacha = closeGacha; 
