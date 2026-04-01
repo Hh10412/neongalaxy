@@ -1,4 +1,4 @@
-const CACHE_NAME = 'neon-galaxy-v5.8.0.5'; // Đổi tên này (v4.6, v4.7...) để kích hoạt cập nhật
+const CACHE_NAME = 'neon-galaxy-v5.8.1'; // Đổi tên này (v4.6, v4.7...) để kích hoạt cập nhật
 const urlsToCache = [
     './',
     './index.html',
@@ -21,6 +21,9 @@ self.addEventListener('activate', (e) => {
             return Promise.all(keyList.map((key) => {
                 if (key !== CACHE_NAME) return caches.delete(key);
             }));
+        }).then(() => {
+            // Thêm dòng này để chiếm quyền điều khiển ngay lập tức
+            return self.clients.claim();
         })
     );
 });
@@ -50,24 +53,29 @@ self.addEventListener('message', (event) => {
     }
 });
 
-// 4. Xử lý yêu cầu mạng (Cache-first strategy)
+// 4. Xử lý yêu cầu mạng (Network-First hoặc Stale-While-Revalidate)
 self.addEventListener('fetch', (e) => {
+    // Chỉ xử lý các yêu cầu GET
+    if (e.request.method !== 'GET') return;
+
     e.respondWith(
-        caches.match(e.request).then((res) => {
-            // Trả về từ cache nếu có, không thì fetch từ mạng
-            return res || fetch(e.request).then((fetchRes) => {
-                // Chỉ lưu vào cache các yêu cầu GET thành công
-                if (e.request.method === 'GET' && e.request.url.startsWith('http')) {
-                    return caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(e.request, fetchRes.clone());
-                        return fetchRes;
+        caches.match(e.request).then((cachedResponse) => {
+            // Nếu có trong cache, trả về luôn, nhưng vẫn fetch ngầm để cập nhật (Stale-while-revalidate)
+            const fetchPromise = fetch(e.request).then((networkResponse) => {
+                // Kiểm tra xem response có hợp lệ để lưu không (status 200)
+                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                    const responseToCache = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(e.request, responseToCache);
                     });
                 }
-                return fetchRes;
+                return networkResponse;
+            }).catch(() => {
+                // Nếu offline hoàn toàn và không có cache, trả về response lỗi nhẹ nhàng
+                return cachedResponse || new Response('Offline', { status: 503 });
             });
-        }).catch(() => {
-            // Nếu lỗi (ví dụ offline hoàn toàn), trả về lỗi 404 rỗng
-            return new Response('', { status: 404 });
+
+            return cachedResponse || fetchPromise;
         })
     );
 });

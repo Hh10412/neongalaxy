@@ -3,7 +3,7 @@
 <head>
   <meta"charset="UTF-8">
   <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"name="viewport">
-  <title>Neon Galaxy: Overdrive v5.8.0.5 - SECURE CLOUD</title>
+  <title>Neon Galaxy: Overdrive v5.8.1 - SECURE CLOUD</title>
   <meta content="yes"name="apple-mobile-web-app-capable">
   <meta content="black-translucent"name="apple-mobile-web-app-status-bar-style">
   <meta content="yes"name="mobile-web-app-capable">
@@ -289,7 +289,7 @@ skipBtn.onclick = () => {
         </div>
     </div>
     <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>    
-    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.8.0.5 SECURE</p>
+    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.8.1 SECURE</p>
     
     <div style="background:rgba(0,255,255,.1);border:1px solid var(--p);padding:5px 15px;border-radius:20px;font-size:12px;margin-bottom:30px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:0 0 10px rgba(0,255,255,.2) inset" onclick="openProfile()">
         <img id="menuAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=guest" style="width:26px;height:26px;border-radius:50%;background:#000"> 
@@ -953,7 +953,13 @@ if(gData.hiddenSkills.aura.activated) {
             }  
             b.x += b.vx; b.y += b.vy; ctx.fillStyle = b.c;  
             if(b.isEnemy) {  
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();  
+                // Thêm check: nếu là laser (pierce) thì vẽ hình chữ nhật, ngược lại vẽ hình tròn
+                if(b.type === 'pierce') {
+                    ctx.fillRect(b.x - b.w/2, b.y, b.w, b.h);
+                } else {
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();  
+                }
+                
                 let pdx = b.x-player.x, pdy = b.y-player.y;
                 if(player.invuln <= 0 && (pdx*pdx + pdy*pdy < (b.r + 10)*(b.r + 10))) {  
                     if(isHardcoreMode) player.hp = 0; else player.hp -= b.dmg; 
@@ -1634,64 +1640,56 @@ window.unlockSkill = function(id, sc, pl, cr, vo) {
   })(); 
   </script>
   <script>
-    if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(reg => {
-        // --- 1. THEO DÕI BIẾN ĐỔI FILE SW.JS TRÊN SERVER ---
-        reg.addEventListener('updatefound', () => {
-            let newWorker = reg.installing;
-            newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    const upBtn = document.getElementById('sw-update-btn');
-                    if (upBtn) {
-                        upBtn.style.display = 'block';
-                        upBtn.onclick = () => {
-                            upBtn.innerText = "ĐANG CẬP NHẬT...";
-                            
-                            // HIỆU ỨNG VĂNG RA NGOÀI (CƯỠNG ÉP THOÁT)
-                            document.body.classList.add('sw-exit-active');
-
-                            // Chờ hiệu ứng văng xong (400ms) rồi mới nạp bản mới
-                            setTimeout(() => {
-                                newWorker.postMessage({ action: 'skipWaiting' });
-                            }, 400); 
-                        };
-                    }
-                }
-            });
-        });
-
-        // --- 2. VÒNG LẶP KIỂM TRA: ONLINE/OFFLINE & BẢN CẬP NHẬT MỚI ---
-        setInterval(() => {
-            // Tự động bảo trình duyệt lên server check file sw.js xem có byte nào đổi không
-            reg.update();
-
-            // Kiểm tra kết nối On/Off
-            if (navigator.serviceWorker.controller) {
-                const messageChannel = new MessageChannel();
-                messageChannel.port1.onmessage = (event) => {
-                    const alertBox = document.getElementById('network-status-alert');
-                    if (!alertBox) return;
-                    if (event.data.status === 'online') {
-                        alertBox.innerText = ">> HỆ THỐNG: ĐÃ TRỰC TUYẾN (CLOUD ON)";
-                        alertBox.className = 'show online-style';
-                    } else {
-                        alertBox.innerText = ">> CẢNH BÁO: CHẾ ĐỘ NGOẠI TUYẾN (OFFLINE)";
-                        alertBox.className = 'show offline-style';
-                    }
-                };
-                navigator.serviceWorker.controller.postMessage({ action: 'checkConnection' }, [messageChannel.port2]);
-            }
-        }, 5000); 
-    });
-
+    <script>
+if ('serviceWorker' in navigator) {
     let refreshing = false;
+
+    // 1. Tự động reload khi Service Worker mới chiếm quyền điều khiển
     navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
-            window.location.reload();
             refreshing = true;
+            window.location.reload();
         }
     });
+
+    // 2. Đăng ký Service Worker
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+        console.log('SW đã đăng ký thành công!');
+
+        // Kiểm tra cập nhật thủ công mỗi 10 giây
+        setInterval(() => {
+            reg.update();
+            console.log('Đang kiểm tra phiên bản mới từ server...');
+        }, 300000);
+
+        // 3. Lắng nghe khi tìm thấy bản cập nhật mới
+        reg.onupdatefound = () => {
+            const newWorker = reg.installing;
+            newWorker.onstatechange = () => {
+                // Nếu bản mới đã tải xong (installed) và trang web đang có bản cũ chạy
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Gọi hàm hiển thị thông báo của bạn ở đây
+                    if (typeof showUpdateNotification === 'function') {
+                        showUpdateNotification(); 
+                    }
+                }
+            };
+        };
+
+        // 4. Hàm để nút "Cập nhật" trên giao diện gọi vào
+        window.applyUpdate = () => {
+            if (reg.waiting) {
+                reg.waiting.postMessage({ action: 'skipWaiting' });
+            } else if (reg.installing) {
+                // Trường hợp đang tải dở mà người dùng bấm luôn
+                reg.installing.postMessage({ action: 'skipWaiting' });
+            }
+        };
+    }).catch(err => {
+        console.error('Lỗi đăng ký SW:', err);
+    });
 }
+</script>
 
   </script>
 </body>
