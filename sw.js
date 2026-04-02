@@ -1,6 +1,6 @@
 // sw.js - Service Worker cho Neon Galaxy (Optimized Version)
 
-const CACHE_NAME = 'neon-galaxy-v5.8.1.3';
+const CACHE_NAME = 'neon-galaxy-v5.8.1.4';
 const ASSETS = [
     './',
     './index.html',
