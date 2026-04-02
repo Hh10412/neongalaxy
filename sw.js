@@ -1,44 +1,52 @@
-const CACHE_NAME = 'neon-galaxy-v5.8.1.3'; // Đổi tên này (v4.6, v4.7...) để kích hoạt cập nhật
-const urlsToCache = [
+// sw.js - Service Worker cho Neon Galaxy (Optimized Version)
+
+const CACHE_NAME = 'neon-galaxy-v5.8.1.3';
+const ASSETS = [
     './',
     './index.html',
     './manifest.json',
     'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'
+    // Bạn có thể thêm các file .png, .jpg, .css khác vào đây
 ];
 
-// 1. Cài đặt và lưu vào bộ nhớ đệm
-self.addEventListener('install', (e) => {
-    e.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
-    );
-});
-
-// 2. Kích hoạt SW và xóa cache cũ
-self.addEventListener('activate', (e) => {
-    e.waitUntil(
-        caches.keys().then((keyList) => {
-            return Promise.all(keyList.map((key) => {
-                if (key !== CACHE_NAME) return caches.delete(key);
-            }));
-        }).then(() => {
-            // Thêm dòng này để chiếm quyền điều khiển ngay lập tức
-            return self.clients.claim();
+// 1. Cài đặt: Lưu trữ tài nguyên vào Cache
+self.addEventListener('install', (event) => {
+    // Ép SW này trở thành active ngay lập tức sau khi cài xong
+    self.skipWaiting(); 
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(ASSETS);
         })
     );
 });
 
-// 3. Lắng nghe lệnh từ trang chính (Main UI)
+// 2. Kích hoạt: Dọn dẹp Cache cũ để giải phóng dung lượng
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((keys) => {
+            return Promise.all(
+                keys.map((key) => {
+                    if (key !== CACHE_NAME) {
+                        return caches.delete(key);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim()) // Chiếm quyền điều khiển trang ngay lập tức
+    );
+});
+
+// 3. Lắng nghe lệnh từ giao diện (Main UI)
 self.addEventListener('message', (event) => {
-    // Lệnh bỏ qua chờ đợi để cập nhật ngay lập tức
-    if (event.data.action === 'skipWaiting') {
+    if (!event.data) return;
+
+    // Lệnh bỏ qua chờ đợi (dùng cho nút bấm cập nhật)
+    if (event.data.type === 'SKIP_WAITING' || event.data.action === 'skipWaiting') {
         self.skipWaiting();
     }
 
-    // Lệnh kiểm tra kết nối Server (On/Off)
+    // Lệnh kiểm tra kết nối Server thực tế (Ping test)
     if (event.data.action === 'checkConnection') {
-        // Thử tải một file cực nhỏ từ server để kiểm tra kết nối thực tế
-        // Sử dụng cache: 'no-store' để đảm bảo không lấy từ cache mà phải ra mạng
         fetch('./favicon.ico', { method: 'HEAD', cache: 'no-store' })
             .then(() => {
                 if (event.ports && event.ports[0]) {
@@ -53,26 +61,25 @@ self.addEventListener('message', (event) => {
     }
 });
 
-// 4. Xử lý yêu cầu mạng (Network-First hoặc Stale-While-Revalidate)
-self.addEventListener('fetch', (e) => {
-    // Chỉ xử lý các yêu cầu GET
-    if (e.request.method !== 'GET') return;
+// 4. Xử lý yêu cầu mạng (Chiến lược: Stale-While-Revalidate)
+// Ưu điểm: Tốc độ cực nhanh vì lấy từ cache trước, nhưng vẫn tải ngầm bản mới để cập nhật cho lần sau.
+self.addEventListener('fetch', (event) => {
+    if (event.request.method !== 'GET') return;
 
-    e.respondWith(
-        caches.match(e.request).then((cachedResponse) => {
-            // Nếu có trong cache, trả về luôn, nhưng vẫn fetch ngầm để cập nhật (Stale-while-revalidate)
-            const fetchPromise = fetch(e.request).then((networkResponse) => {
-                // Kiểm tra xem response có hợp lệ để lưu không (status 200)
-                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+    event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+            const fetchPromise = fetch(event.request).then((networkResponse) => {
+                // Nếu tải mới thành công, cập nhật lại cache
+                if (networkResponse && networkResponse.status === 200) {
                     const responseToCache = networkResponse.clone();
                     caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(e.request, responseToCache);
+                        cache.put(event.request, responseToCache);
                     });
                 }
                 return networkResponse;
             }).catch(() => {
-                // Nếu offline hoàn toàn và không có cache, trả về response lỗi nhẹ nhàng
-                return cachedResponse || new Response('Offline', { status: 503 });
+                // Nếu mất mạng hoàn toàn, trả về cache
+                return cachedResponse;
             });
 
             return cachedResponse || fetchPromise;

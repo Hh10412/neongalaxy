@@ -1652,55 +1652,63 @@ window.unlockSkill = function(id, sc, pl, cr, vo) {
     
   })(); 
   </script>
-  <script>
-if ('serviceWorker' in navigator) {
-    let refreshing = false;
-
-    // 1. Tự động reload khi Service Worker mới chiếm quyền điều khiển
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-            refreshing = true;
-            window.location.reload();
+<script>
+  if ('service-worker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        
+        // Kiểm tra xem có SW nào đang chờ sẵn không (trường hợp load lại trang)
+        if (reg.waiting) {
+          showUpdateBar(reg.waiting);
         }
-    });
 
-    // 2. Đăng ký Service Worker
-    navigator.serviceWorker.register('./sw.js').then(reg => {
-        console.log('SW đã đăng ký thành công!');
-
-        // Kiểm tra cập nhật thủ công mỗi 10 giây
-        setInterval(() => {
-            reg.update();
-            console.log('Đang kiểm tra phiên bản mới từ server...');
-        }, 300000);
-
-        // 3. Lắng nghe khi tìm thấy bản cập nhật mới
-        reg.onupdatefound = () => {
-            const newWorker = reg.installing;
-            newWorker.onstatechange = () => {
-                // Nếu bản mới đã tải xong (installed) và trang web đang có bản cũ chạy
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // Gọi hàm hiển thị thông báo của bạn ở đây
-                    if (typeof showUpdateNotification === 'function') {
-                        showUpdateNotification(); 
-                    }
-                }
-            };
-        };
-
-        // 4. Hàm để nút "Cập nhật" trên giao diện gọi vào
-        window.applyUpdate = () => {
-            if (reg.waiting) {
-                reg.waiting.postMessage({ action: 'skipWaiting' });
-            } else if (reg.installing) {
-                // Trường hợp đang tải dở mà người dùng bấm luôn
-                reg.installing.postMessage({ action: 'skipWaiting' });
+        // Lắng nghe sự kiện tìm thấy bản cập nhật mới
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBar(newWorker);
             }
-        };
-    }).catch(err => {
-        console.error('Lỗi đăng ký SW:', err);
+          });
+        });
+      });
     });
-}
-  </script>
+
+    // Hàm hiển thị nút thông báo
+    function showUpdateBar(worker) {
+      const btn = document.getElementById('sw-update-btn');
+      if (!btn) return;
+      
+      btn.style.display = 'block';
+      btn.innerHTML = '✨ ĐÃ CÓ BẢN CẬP NHẬT MỚI';
+      
+      btn.onclick = () => {
+        // 1. Gửi tín hiệu skipWaiting tới Service Worker
+        worker.postMessage({ type: 'SKIP_WAITING' });
+
+        // 2. Hiệu ứng thoát ứng dụng (tùy chọn theo CSS có sẵn của bạn)
+        document.body.classList.add('sw-exit-active');
+
+        // 3. Xóa dữ liệu phiên làm việc
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Đợi một chút để hiệu ứng chạy rồi reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 400);
+      };
+    }
+
+    // Lắng nghe khi SW mới chính thức kích hoạt để reload trang
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        window.location.reload();
+        refreshing = true;
+      }
+    });
+  }
+</script>
 </body>
 </html>
