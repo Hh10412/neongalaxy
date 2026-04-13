@@ -1,4 +1,4 @@
-  (() => {
+    (() => {
     let W, H; let isHardcoreMode = false; let isEndlessMode = false; let state = 'MENU';  
     let player, enemies = [], bullets = [], particles = [], items = [], stars = [], texts = [], trails = [];  
     let game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false, surviveFrames:0 };  
@@ -164,11 +164,80 @@ function getSecureDate() {
             let u = document.getElementById('inpUser').value.trim(); let p = document.getElementById('inpPass').value.trim(); if(!u || !p) return this.msg("Nhập đầy đủ thông tin!"); if(u.length < 3) return this.msg("Tên quá ngắn!");
             this.setLoading(true); try { const userCredential = await window.fbAuth.createUserWithEmailAndPassword(window.auth, this.toEmail(u), p); let initialData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, hasWon: false, maxTime: 0, avatar: u, lastUpdated: Date.now(), hasSeenIntro: false }; await window.fb.setDoc(window.fb.doc(window.db, "users", userCredential.user.uid), { data: initialData }); this.msg("Tạo thành công!", "#0f0"); } catch(e) { this.setLoading(false); switch (e.code) { case 'auth/email-already-in-use': this.msg("Tên này đã có người xài!"); break; case 'auth/weak-password': this.msg("Mật khẩu phải từ 6 ký tự!"); break; default: this.msg("Lỗi server: " + (e.code || "Unknown")); } }
         },
-        fetchAndLoadProfile: async function(uid, u) {
-            currentUsername = u; try { let localData = secureLoadLocal(); const docSnap = await window.fb.getDoc(window.fb.doc(window.db, "users", uid));
-            if(docSnap.exists()) { let cloudData = docSnap.data().data; if (localData && localData.username.toLowerCase() !== u.toLowerCase()) { gData = cloudData; } else if (localData) { let localTime = localData.lastUpdated || 0; let cloudTime = cloudData.lastUpdated || 0; gData = (localTime > cloudTime) ? localData : cloudData; gData.maxScore = Math.max(localData.maxScore || 0, cloudData.maxScore || 0); gData.maxLvl = Math.max(localData.maxLvl || 1, cloudData.maxLvl || 1); gData.maxScore_hc = Math.max(localData.maxScore_hc || 0, cloudData.maxScore_hc || 0); gData.maxLvl_hc = Math.max(localData.maxLvl_hc || 1, cloudData.maxLvl_hc || 1); } else { gData = cloudData; } } else { gData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, hasWon: false, maxTime: 0, avatar: u, lastUpdated: Date.now(), hasSeenIntro: false }; }
-            syncHash(); secureSaveLocal(gData); this.saveSync(); document.getElementById('menuUsername').innerText = currentUsername.toUpperCase(); document.getElementById('menuAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${gData.avatar}`; this.setLoading(false); document.getElementById('authScreen').classList.add('hidden'); if (!gData.hasSeenIntro) { window.playIntroFlow(); } else { document.getElementById('menuScreen').classList.remove('hidden'); } } catch(e) { }
+                fetchAndLoadProfile: async function(uid, u) {
+            currentUsername = u; 
+            try { 
+                let localData = secureLoadLocal(); 
+                const docSnap = await window.fb.getDoc(window.fb.doc(window.db, "users", uid));
+                if(docSnap.exists()) { 
+                    let cloudData = docSnap.data().data; 
+                    if (localData && localData.username.toLowerCase() !== u.toLowerCase()) { 
+                        gData = cloudData; 
+                    } else if (localData) { 
+                        let localTime = localData.lastUpdated || 0; 
+                        let cloudTime = cloudData.lastUpdated || 0; 
+                        gData = (localTime > cloudTime) ? localData : cloudData; 
+                        gData.maxScore = Math.max(localData.maxScore || 0, cloudData.maxScore || 0); 
+                        gData.maxLvl = Math.max(localData.maxLvl || 1, cloudData.maxLvl || 1); 
+                        gData.maxScore_hc = Math.max(localData.maxScore_hc || 0, cloudData.maxScore_hc || 0); 
+                        gData.maxLvl_hc = Math.max(localData.maxLvl_hc || 1, cloudData.maxLvl_hc || 1); 
+                    } else { 
+                        gData = cloudData; 
+                    } 
+                } else { 
+                    gData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, hasWon: false, maxTime: 0, avatar: u, lastUpdated: Date.now(), hasSeenIntro: false }; 
+                }
+                syncHash(); secureSaveLocal(gData); this.saveSync(); 
+                
+                document.getElementById('menuUsername').innerText = currentUsername.toUpperCase(); 
+                document.getElementById('menuAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${gData.avatar}`; 
+                this.setLoading(false); 
+                document.getElementById('authScreen').classList.add('hidden'); 
+                if (!gData.hasSeenIntro) { window.playIntroFlow(); } else { document.getElementById('menuScreen').classList.remove('hidden'); } 
+
+                // =======================================================
+                // BẮT ĐẦU THÊM MỚI: LẮNG NGHE ĐỒNG BỘ REAL-TIME TỪ CLOUD
+                // =======================================================
+                if (this.syncListener) this.syncListener(); // Xóa listener cũ tránh chạy ngầm nhiều lần
+                this.syncListener = window.fb.onSnapshot(window.fb.doc(window.db, "users", uid), (doc) => {
+                    if (doc.exists()) {
+                        let cloudData = doc.data().data;
+                        let localTime = gData.lastUpdated || 0;
+                        let cloudTime = cloudData.lastUpdated || 0;
+                        
+                        // Nếu dữ liệu trên Cloud mới hơn (do thiết bị khác vừa chơi/cập nhật)
+                        if (cloudTime > localTime) {
+                            gData = cloudData;
+                            syncHash();
+                            secureSaveLocal(gData);
+                            
+                            // 1. Làm mới UI ở màn hình chính
+                            if(document.getElementById('menuUsername')) document.getElementById('menuUsername').innerText = currentUsername.toUpperCase();
+                            if(document.getElementById('menuAvatar')) document.getElementById('menuAvatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${gData.avatar}`;
+                            
+                            // 2. Cập nhật số Vàng ở mọi nơi đang hiển thị
+                            if(document.getElementById('hudCoin')) document.getElementById('hudCoin').innerText = gData.coins;
+                            if(document.getElementById('eqCoin')) document.getElementById('eqCoin').innerText = gData.coins;
+                            if(document.getElementById('shopCoin')) document.getElementById('shopCoin').innerText = gData.coins;
+                            
+                            // 3. Cập nhật Hồ sơ & Gacha
+                            if(document.getElementById('profLvl')) document.getElementById('profLvl').innerText = gData.maxLvl || 1;
+                            if(document.getElementById('profScore')) document.getElementById('profScore').innerText = gData.maxScore || 0;
+                            if(document.getElementById('gachaTicketCount')) document.getElementById('gachaTicketCount').innerText = gData.tickets || 0;
+                            
+                            // 4. Tự động Refresh các màn hình phụ nếu thiết bị B đang mở chúng
+                            if (typeof updateCraftingUI === 'function' && !document.getElementById('craftScreen').classList.contains('hidden')) updateCraftingUI();
+                            if (typeof renderQuests === 'function' && !document.getElementById('questScreen').classList.contains('hidden')) renderQuests();
+                            if (typeof openEquip === 'function' && !document.getElementById('equipScreen').classList.contains('hidden')) openEquip();
+                            if (typeof updateMenuGachaBadge === 'function') updateMenuGachaBadge();
+                        }
+                    }
+                });
+                // =======================================================
+
+            } catch(e) { console.error("Lỗi đồng bộ:", e); }
         },
+
         openSwitchAccount: function() { gData = { username: "", coins: 0, stats: {}, owned: [], equip: {} }; document.getElementById('menuScreen').classList.add('hidden'); document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('authClose').classList.remove('hidden'); document.getElementById('inpUser').value = ''; document.getElementById('inpPass').value = ''; this.msg("Vui lòng đăng nhập tài khoản khác", "var(--y)"); },
         cancelAuth: function() { if(!window.auth.currentUser) return; document.getElementById('authScreen').classList.add('hidden'); document.getElementById('menuScreen').classList.remove('hidden'); },
         deleteAccount: async function() { let p = prompt("CẢNH BÁO TỐI CAO!\nNhập lại mật khẩu của bạn để XÓA VĨNH VIỄN tài khoản:"); if(!p) return; let user = window.auth.currentUser; if(!user) return; try { await window.fbAuth.reauthenticateWithCredential(user, window.fbAuth.EmailAuthProvider.credential(user.email, p)); await window.fb.deleteDoc(window.fb.doc(window.db, "users", user.uid)); await window.fbAuth.deleteUser(user); localStorage.removeItem(SAVE_KEY); alert("Tài khoản đã bị hủy diệt hoàn toàn!"); location.reload(); } catch(e) { alert("Sai mật khẩu hoặc lỗi kết nối. Không thể xóa!"); } },
@@ -301,6 +370,10 @@ function getSecureDate() {
     gData.inventory = { mat_scrap: 0, mat_plasma: 0, mat_crystal: 0, mat_void: 0, card_bronze: 0, card_silver: 0, card_gold: 0, card_plat: 0 };
 }
 if (!gData.hiddenSkills) {
+// THÊM ĐOẠN NÀY VÀO HÀM startGame()
+if (!gData.itemCards) {
+    gData.itemCards = {}; // Lưu thẻ theo ID của từng loại trang bị riêng biệt
+}
     gData.hiddenSkills = { 
         aura: { unlockedBlueprint: false, activated: false }, 
         nano: { unlockedBlueprint: false, activated: false }, 
@@ -313,10 +386,30 @@ if (!gData.hiddenSkills) {
           
         state = 'PLAYING'; document.querySelectorAll('.overlay').forEach(e => e.classList.add('hidden')); document.getElementById('uiLayer').classList.remove('hidden');  
         const hull = EQUIP_DB.hulls[gData.equip.h]; const upHP = (gData.stats.hp || 0) * 50;  
-          
-        let cardHp = (gData.inventory.card_bronze * 5) + (gData.inventory.card_silver * 15);
-let cardAtkMult = (gData.inventory.card_bronze * 0.02) + (gData.inventory.card_silver * 0.05) + (gData.inventory.card_gold * 0.1) + (gData.inventory.card_plat * 0.2);
-let cardCrit = (gData.inventory.card_gold * 0.03);
+// Lấy các thẻ của đúng trang bị ĐANG MẶC
+let activeCards = [
+    ...(gData.itemCards[gData.equip.w] || []), 
+    ...(gData.itemCards[gData.equip.h] || [])
+].filter(c => c !== null);
+
+let cardHp = 0, cardAtkMult = 0, cardCrit = 0, hasPlat = false;
+let highestTier = -1; let auraColor = null;
+
+activeCards.forEach(c => {
+    // Xác định màu aura dựa theo thẻ cao cấp nhất
+    let t = -1, clr = '';
+    if(c.includes('bronze')) { t = 1; clr = '#cd7f32'; }
+    if(c.includes('silver')) { t = 2; clr = '#c0c0c0'; }
+    if(c.includes('gold')) { t = 3; clr = '#ffd700'; }
+    if(c.includes('plat')) { t = 4; clr = '#b200ff'; }
+    if(t > highestTier) { highestTier = t; auraColor = clr; }
+
+    // Tính chỉ số
+    if(c === 'bronze' || c === 'card_bronze') { cardHp += 5; cardAtkMult += 0.02; }
+    if(c === 'silver' || c === 'card_silver') { cardHp += 15; cardAtkMult += 0.05; }
+    if(c === 'gold' || c === 'card_gold') { cardAtkMult += 0.1; cardCrit += 0.03; }
+    if(c === 'plat' || c === 'card_plat') { cardAtkMult += 0.2; hasPlat = true; }
+});
 
 let totalAtk = 10 * (1 + (gData.stats.atk||0) * 0.1 + cardAtkMult);
 let totalHp = 100 + hull.hp + upHP + cardHp;
@@ -328,7 +421,9 @@ player = {
     spd: 0.12 + hull.spd, 
     crit: ((gData.stats.crit || 0) * 0.05) + cardCrit, 
     magRadius: 100 + (gData.stats.mag || 0) * 40, 
-    wep: gData.equip.w, fr: 0, nextFr: EQUIP_DB.weapons[gData.equip.w].fr || 12, mult: 1 + (gData.inventory.card_plat > 0 ? 1 : 0), invuln: 0 
+    wep: gData.equip.w, fr: 0, nextFr: EQUIP_DB.weapons[gData.equip.w].fr || 12,  
+    mult: 1 + (hasPlat ? 1 : 0), invuln: 0, 
+    auraColor: auraColor // <--- Thêm dòng này để lưu màu Aura
 };  
 
 // Logic Kỹ năng Ẩn: Overclock (Quá tải)
@@ -411,7 +506,7 @@ player.drone = gData.equip.d || '';
         // Xử lý kích hoạt sự kiện sau khi lên cấp (chờ Boss chết mới chạy)
 if (game.pendingEventRoll && !game.boss) {
     game.pendingEventRoll = false;
-    if (Math.random() < 0.35) { // 35% tỷ lệ xảy ra sự kiện
+    if (Math.random() < 0.1) { // 35% tỷ lệ xảy ra sự kiện
         game.activeEvent = Math.random() < 0.5 ? 'meteor' : 'supply';
         let alertColor = game.activeEvent === 'meteor' ? '#ff4444' : '#00ffff';
         let alertText = game.activeEvent === 'meteor' ? "BÃO THIÊN THẠCH" : "HẠM ĐỘI TIẾP TẾ";
@@ -444,6 +539,23 @@ ctx.fillRect(-20,-20,W+40,H+40);
         ctx.save(); ctx.translate(player.x, player.y);  
         if(player.invuln > 0) { ctx.globalAlpha = game.frame % 10 < 5 ? 0.3 : 0.8; if(player.invuln > 60) { ctx.beginPath(); ctx.arc(0, 0, player.r + 10, 0, Math.PI*2); ctx.strokeStyle = '#0ff'; ctx.lineWidth = 2; ctx.stroke(); } }
         
+        // --- VẼ AURA MÀU THEO THẺ ---
+        if(player.auraColor) {
+            ctx.save();
+            ctx.beginPath();
+            // Bán kính nhấp nháy theo thời gian
+            let pulse = Math.sin(game.frame * 0.1) * 3;
+            ctx.arc(0, 0, player.r + 6 + pulse, 0, Math.PI * 2);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = player.auraColor;
+            ctx.strokeStyle = player.auraColor;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.7;
+            ctx.stroke();
+            ctx.restore();
+        }
+        // -----------------------------
+
         ctx.rotate((dx * 0.05) * Math.PI/180 * 20); ctx.fillStyle = EQUIP_DB.weapons[player.wep].color;  
         ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(18,15); ctx.lineTo(0,10); ctx.lineTo(-18,15); ctx.fill();  
                 ctx.fillStyle = '#fff'; ctx.fillRect(-2,-2,4,4); ctx.restore(); ctx.globalAlpha = 1;  
@@ -483,24 +595,34 @@ ctx.fillRect(-20,-20,W+40,H+40);
         }
         // ------------------------------------------
 
-        if(game.frame % player.nextFr === 0) fire(); if(game.frame % Math.max(60, 100 - game.lvl*2) === 0 && !game.boss) {
-
-    // Nếu có sự kiện, 30% quái sinh ra sẽ là quái sự kiện
-    if (game.activeEvent && Math.random() < 0.3) {
-        let e = ePool.get();
-        if (e) {
-            if (game.activeEvent === 'meteor') {
-                Object.assign(e, { type: 'meteor', x: Math.random()*(W-50)+25, y: -50, r: 25, hp: 100 + game.lvl*5, maxHp: 100 + game.lvl*5, s: 2 + Math.random()*2, color: '#aaaaaa', angle: 0 });
-            } else {
-                Object.assign(e, { type: 'supply', x: Math.random()*(W-40)+20, y: -50, r: 20, hp: 500 + game.lvl*20, maxHp: 500 + game.lvl*20, s: 4, color: '#00ffff', angle: 0 });
+        if(game.frame % player.nextFr === 0) fire(); 
+        
+        // 1. TĂNG TỐC ĐỘ: Càng lên level, quái ra càng nhanh (nhanh nhất là 20 frame / đợt thay vì 60 như cũ)
+        let spawnRate = Math.max(20, 100 - game.lvl * 3); 
+        
+        if(game.frame % spawnRate === 0 && !game.boss) {
+            
+            // 2. TĂNG SỐ LƯỢNG: Cứ mỗi 5 level, đẻ thêm 1 con quái cùng lúc trong một đợt
+            let spawnCount = 1 + Math.floor(game.lvl / 5);
+            
+            for(let i = 0; i < spawnCount; i++) {
+                // Nếu có sự kiện, 30% quái sinh ra sẽ là quái sự kiện
+                if (game.activeEvent && Math.random() < 0.3) {
+                    let e = ePool.get();
+                    if (e) {
+                        if (game.activeEvent === 'meteor') {
+                            Object.assign(e, { type: 'meteor', x: Math.random()*(W-50)+25, y: -50, r: 25, hp: 100 + game.lvl*5, maxHp: 100 + game.lvl*5, s: 2 + Math.random()*2, color: '#aaaaaa', angle: 0 });
+                        } else {
+                            Object.assign(e, { type: 'supply', x: Math.random()*(W-40)+20, y: -50, r: 20, hp: 500 + game.lvl*20, maxHp: 500 + game.lvl*20, s: 4, color: '#00ffff', angle: 0 });
+                        }
+                        e.baseX = e.x;
+                        enemies.push(e);
+                    }
+                } else {
+                    spawnEnemy(); // 70% còn lại là quái thường
+                }
             }
-            e.baseX = e.x;
-            enemies.push(e);
         }
-    } else {
-        spawnEnemy(); // 75% còn lại vẫn ra quái thường
-    }
-}
  
         
 // Logic Kỹ Năng Ẩn: Black Hole Aura
@@ -681,11 +803,18 @@ if(e.type === 'meteor' || e.type === 'supply') {
         AudioSys.sfxExplode(); spawnParticles(e.x, e.y, e.color, 30); doShake(10);
     }
 
-    // Rớt nguyên liệu chế tạo (Rate cao)
+    // Rớt nguyên liệu chế tạo (Đã cân bằng tỷ lệ)
     let mType = 'mat_scrap';
     let r = Math.random();
-    if(e.type === 'supply') { if(r<0.1) mType = 'mat_void'; else if(r<0.3) mType = 'mat_crystal'; else mType = 'mat_plasma'; }
-    else { if(r<0.1) mType = 'mat_crystal'; else if(r<0.3) mType = 'mat_plasma'; }
+    if(e.type === 'supply') { 
+        if(r < 0.08) mType = 'mat_void';        // 8% Hạt hư vô
+        else if(r < 0.3) mType = 'mat_plasma'; // 30% Plasma
+        else mType = 'mat_scrap';               // 62% Kim loại
+    } else { 
+        if(r < 0.05) mType = 'mat_crystal';     // 5% Tinh thể
+        else if(r < 0.25) mType = 'mat_plasma'; // 20% Plasma
+        else mType = 'mat_scrap';               // 75% Kim loại
+    }
     
     items.push({x: e.x, y: e.y, t: 'mat', mType: mType});
     ePool.release(e); enemies.splice(i,1); break;
@@ -704,11 +833,19 @@ if(e.type === 'boss') {
     else if (game.lvl === 20 && !gData.hiddenSkills.nano.unlockedBlueprint) bpType = 'nano';
     else if (game.lvl === 30 && !gData.hiddenSkills.overclock.unlockedBlueprint) bpType = 'overclock';
     else if (game.lvl === 40 && !gData.hiddenSkills.aegis.unlockedBlueprint) bpType = 'aegis';
+        if(bpType) items.push({x: e.x, y: e.y, t: 'bp', bpId: bpType});
     
-    if(bpType) items.push({x: e.x, y: e.y, t: 'bp', bpId: bpType});
+    // Thêm tỷ lệ rớt Thẻ (Card) - CHỈ RƠI TỪ BOSS VỚI TỶ LỆ CŨ
+    let cardRng = Math.random();
+    if (cardRng < 0.0005) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_plat'}); }
+    else if (cardRng < 0.001) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_gold'}); }
+    else if (cardRng < 0.005) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_silver'}); }
+    else if (cardRng < 0.01) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_bronze'}); }
+
     // ---------------------------------------------------------------------------------
 
     rewardAmount = Math.floor(500 * coinMultiplier); secureAddCoins(rewardAmount);
+
     addText("BOSS BONUS +" + rewardAmount, e.x, e.y - 40, true, '#ffd700', true);
     if (e.name === "Neural Overlord") gData.hasWon = true; save();
     } else { 
@@ -724,11 +861,8 @@ if(e.type === 'boss') {
     let rngDrop = Math.random();
 
     // Thêm tỷ lệ rớt Thẻ (Card)
-    if (rngDrop < 0.0005) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_plat'}); }
-    else if (rngDrop < 0.001) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_gold'}); }
-    else if (rngDrop < 0.005) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_silver'}); }
-    else if (rngDrop < 0.01) { items.push({x:e.x, y:e.y, t: 'card', cType: 'card_bronze'}); }
-    else if(rngDrop < 0.025) { items.push({x:e.x, y:e.y, t: 'b'}); } 
+
+     if(rngDrop < 0.025) { items.push({x:e.x, y:e.y, t: 'b'}); } 
     else if(rngDrop < 0.045) { items.push({x:e.x, y:e.y, t: 's'}); } 
     else if(rngDrop < (player.hp < player.maxHp * 0.35 ? 0.3 : 0.06)) { items.push({x:e.x, y:e.y, t: 'h'}); } 
     else if(rngDrop > (0.9 - (gData.stats.luck||0)*0.05)) { if (isEndlessMode) items.push({x: e.x, y: e.y, t: 'c', val: rewardAmount}); else items.push({x:e.x, y:e.y, t: 'x'}); } 
@@ -755,9 +889,15 @@ ePool.release(e); enemies.splice(i,1); break;
             if(distSq < player.magRadius*player.magRadius) { it.x += (player.x - it.x)*0.15; it.y += (player.y - it.y)*0.15; } else { it.y += 2; }
             let icon = '💰'; ctx.fillStyle = '#ffd700'; 
             if(it.t === 'x') { icon = '💠'; ctx.fillStyle = '#0ff'; } if(it.t === 'h') { icon = '💚'; ctx.fillStyle = '#0f0'; } if(it.t === 's') { icon = '🛡️'; ctx.fillStyle = '#0ff'; } if(it.t === 'b') { icon = '💣'; ctx.fillStyle = '#f00'; } 
-            else if(it.t === 'mat') { icon = '⚙️'; ctx.fillStyle = MAT_COLORS[it.mType]; }
-else if(it.t === 'card') { icon = '🃏'; ctx.fillStyle = it.cType.includes('plat') ? '#b200ff' : (it.cType.includes('gold') ? '#ffff00' : '#fff'); }
-else if(it.t === 'bp') { icon = '📜'; ctx.fillStyle = '#ff00ff'; }
+                        else if(it.t === 'mat') { 
+                ctx.fillStyle = MAT_COLORS[it.mType]; 
+                if(it.mType === 'mat_void') icon = '🌌';
+                else if(it.mType === 'mat_crystal') icon = '💎';
+                else if(it.mType === 'mat_plasma') icon = '🔋';
+                else icon = '⚙️';
+            }
+           else if(it.t === 'card') { icon = '🃏'; ctx.fillStyle = it.cType.includes('plat') ? '#b200ff' : (it.cType.includes('gold') ? '#ffff00' : '#fff'); }
+           else if(it.t === 'bp') { icon = '📜'; ctx.fillStyle = '#ff00ff'; }
 
             ctx.fillText(icon, it.x, it.y); 
             if(distSq < 900) { 
@@ -849,15 +989,16 @@ else if(it.t==='bp') {
     };
 
     function openEquip() { 
-        if(!gData.equip.d) gData.equip.d = ''; // Sửa lỗi cho tài khoản cũ chưa có slot drone
-        document.getElementById('menuScreen').classList.add('hidden'); 
-        document.getElementById('equipScreen').classList.remove('hidden'); 
-        document.getElementById('eqCoin').innerText = gData.coins; 
-        renderEquipGrid('weaponGrid', EQUIP_DB.weapons, 'w'); 
-        renderEquipGrid('hullGrid', EQUIP_DB.hulls, 'h'); 
-        renderEquipGrid('droneGrid', EQUIP_DB.drones, 'd'); 
-    }  
- 
+    if(!gData.equip.d) gData.equip.d = ''; 
+    document.getElementById('menuScreen').classList.add('hidden'); 
+    document.getElementById('equipScreen').classList.remove('hidden'); 
+    document.getElementById('eqCoin').innerText = gData.coins; 
+        
+    renderEquipGrid('weaponGrid', EQUIP_DB.weapons, 'w'); 
+    renderEquipGrid('hullGrid', EQUIP_DB.hulls, 'h'); 
+    renderEquipGrid('droneGrid', EQUIP_DB.drones, 'd'); 
+}  
+
      // --- LOGIC GACHA ---
 let gachaInterval = null;
 
@@ -1192,7 +1333,15 @@ function claimQuest(qId, tab) {
 }
 // --- KẾT THÚC HỆ THỐNG NHIỆM VỤ ---
 
-    function renderEquipGrid(id, db, type) { const el = document.getElementById(id); el.innerHTML = ''; for(let k in db) { let item = db[k], owned = gData.owned.includes(k), equipped = gData.equip[type] === k; let div = document.createElement('div'); div.className = `equip-card ${equipped?'active':''} ${owned?'owned':''}`; div.onclick = () => handleEquipClick(k, type, db[k].cost); div.innerHTML = `<span class="equip-icon" style="color:${item.color||'#fff'}">${type=='w' ? '⚔️' : (type=='h' ? '🛡️' : '🛸')}</span><span class="equip-name">${item.n}</span><span class="equip-stat">${item.d}</span>${equipped ? '<b style="color:var(--p);font-size:11px">ĐANG DÙNG</b>' : (owned ? '<span style="color:#ff0;font-size:10px">SỞ HỮU</span>' : `<span class="cost-badge">${item.cost} 💰</span>`)}`; el.appendChild(div); } }  
+    function renderEquipGrid(id, db, type) { const el = document.getElementById(id); el.innerHTML = ''; for(let k in db) { let item = db[k], owned = gData.owned.includes(k), equipped = gData.equip[type] === k; let div = document.createElement('div'); div.className = `equip-card ${equipped?'active':''} ${owned?'owned':''}`; let pressTimer;
+div.onmousedown = div.ontouchstart = (e) => { 
+    pressTimer = window.setTimeout(() => { openCardPopup(k, type, item.n); pressTimer = null; }, 500); 
+};
+div.onmouseup = div.ontouchend = (e) => { 
+    if(pressTimer) { clearTimeout(pressTimer); handleEquipClick(k, type, db[k].cost); }
+};
+div.onmouseleave = div.ontouchcancel = () => { if(pressTimer) clearTimeout(pressTimer); };
+div.innerHTML = `<span class="equip-icon" style="color:${item.color||'#fff'}">${type=='w' ? '⚔️' : (type=='h' ? '🛡️' : '🛸')}</span><span class="equip-name">${item.n}</span><span class="equip-stat">${item.d}</span>${equipped ? '<b style="color:var(--p);font-size:11px">ĐANG DÙNG</b>' : (owned ? '<span style="color:#ff0;font-size:10px">SỞ HỮU</span>' : `<span class="cost-badge">${item.cost} 💰</span>`)}`; el.appendChild(div); } }  
     function handleEquipClick(id, type, cost) { if(gData.owned.includes(id)) { gData.equip[type] = id; save(); openEquip(); AudioSys.playTone(600, 'sine', 0.1); } else { if(secureDeductCoins(cost)) { gData.owned.push(id); gData.equip[type] = id; save(); openEquip(); AudioSys.sfxCoin(); } else { alert("Không đủ vàng hoặc lỗi bảo mật!"); } } }  
     function openShop() { document.getElementById('menuScreen').classList.add('hidden'); document.getElementById('shopScreen').classList.remove('hidden'); document.getElementById('shopCoin').innerText = gData.coins; const g = document.getElementById('shopGrid'); g.innerHTML = ''; for(let k in UPGRADES) { let u = UPGRADES[k], lv = gData.stats[k] || 0, cost = Math.floor(u.cost * Math.pow(1.5, lv)), isMax = lv >= u.max; g.innerHTML += `<div class="equip-card"><span class="equip-name">${u.n} <span style="color:var(--y)">(Lv ${lv})</span></span><span class="equip-stat">${u.desc}</span><button class="btn-main" style="padding:8px; font-size:11px; width:100%; margin:0;" onclick="buyUpgrade('${k}', ${cost}, ${u.max})">${isMax ? 'MAX' : cost + ' 💰'}</button></div>`; } }  
     function buyUpgrade(key, cost, max) { if(!verifyIntegrity()) return; if((gData.stats[key]||0) >= max) return; if(secureDeductCoins(cost)) { gData.stats[key] = (gData.stats[key]||0) + 1; save(); openShop(); AudioSys.sfxCoin(); } else { alert("Cày thêm vàng để nâng!"); } }  
@@ -1297,12 +1446,116 @@ window.unlockSkill = function(id, sc, pl, cr, vo) {
     window.switchQuestTab = switchQuestTab; 
     window.claimQuest = claimQuest;
     window.openProfile = openProfile; window.closeProfile = closeProfile; window.toggleAvatarSelect = toggleAvatarSelect; window.setAvatar = setAvatar; window.openChangePass = openChangePass; window.closeChangePass = closeChangePass; window.executeChangePass = executeChangePass; window.openEquip = openEquip; window.closeEquip = closeEquip; window.openShop = openShop; window.closeShop = closeShop; window.openLeaderboard = openLeaderboard; window.closeLeaderboard = closeLeaderboard; window.toggleAudio = toggleAudio; window.showConfirmQuit = showConfirmQuit; window.executeQuit = executeQuit; window.tryUlt = tryUlt;
+let currentPopupItemId = null;
+
+// Khởi tạo data chứa Thẻ Đã Ép (Nếu chưa có)
+if (!gData.craftedCards) gData.craftedCards = { bronze: 0, silver: 0, gold: 0, plat: 0 };
+
+window.openCardPopup = function(itemId, type, itemName) {
+    if(!gData.owned.includes(itemId)) return alert("Bạn phải mua/sở hữu trang bị này trước!");
+    if(type === 'd') return alert("Drone không có tính năng lắp thẻ!");
     
+    currentPopupItemId = itemId;
+    document.getElementById('cpTitle').innerText = `KHE THẺ: ${itemName.toUpperCase()}`;
+    document.getElementById('cardPopup').classList.remove('hidden');
+    renderCardPopup();
+};
+
+window.closeCardPopup = function() {
+    document.getElementById('cardPopup').classList.add('hidden');
+    currentPopupItemId = null;
+};
+
+window.renderCardPopup = function() {
+    if(!currentPopupItemId) return;
+    if(!gData.itemCards) gData.itemCards = {};
+    if(!gData.itemCards[currentPopupItemId]) gData.itemCards[currentPopupItemId] = [null, null];
+    if(!gData.craftedCards) gData.craftedCards = { bronze: 0, silver: 0, gold: 0, plat: 0 };
+
+    // 1. KHE CẮM (Chỉ hiện thẻ đang cắm)
+    let slotsHtml = '';
+    for(let i=0; i<2; i++) {
+        let card = gData.itemCards[currentPopupItemId][i];
+        if(card) {
+            let color = card === 'plat' ? '#b200ff' : (card === 'gold' ? '#ffd700' : (card === 'silver' ? '#c0c0c0' : '#cd7f32'));
+            slotsHtml += `<button class="btn-main btn-small" onclick="unequipCardFromItem(${i})" style="border-color:${color}; color:${color}; margin:0; flex:1;">[${card.toUpperCase()}]<br><span style="font-size:8px;color:#fff">Bấm để gỡ</span></button>`;
+        } else {
+            slotsHtml += `<button class="btn-sec btn-small" style="margin:0; border-style:dashed; color:#888; border-color:#555; flex:1; cursor:default;">+ Trống</button>`;
+        }
+    }
+    document.getElementById('cpSlots').innerHTML = slotsHtml;
+
+    // 2. KHO THẺ ĐÃ ÉP
+    let craftedHtml = '';
+    ['bronze', 'silver', 'gold', 'plat'].forEach(c => {
+        let count = gData.craftedCards[c] || 0;
+        let color = c === 'plat' ? '#b200ff' : (c === 'gold' ? '#ffd700' : (c === 'silver' ? '#c0c0c0' : '#cd7f32'));
+        craftedHtml += `<button class="btn-main btn-small" onclick="equipCardToItem('${c}')" ${count===0?'disabled style="filter:grayscale(1); cursor:not-allowed;"':''} style="border-color:${color}; color:${color}; padding: 10px 5px; margin:0;">${c.toUpperCase()} (ĐÃ ÉP)<br><span style="font-size:10px; color:#fff">SẴN SÀNG: ${count}</span></button>`;
+    });
+    document.getElementById('cpCrafted').innerHTML = craftedHtml;
+};
+
+// Hàm bấm ÉP THẺ: Tốn phôi + Tốn vàng -> Sinh ra thẻ đã ép
+window.craftRawCard = function(type, cost) {
+    let invKey = 'card_' + type;
+    if(gData.inventory[invKey] > 0) {
+        if(secureDeductCoins(cost)) {
+            gData.inventory[invKey]--;
+            gData.craftedCards[type] = (gData.craftedCards[type] || 0) + 1;
+            save(); 
+            AudioSys.playTone(1000, 'sine', 0.2); // Âm thanh báo ép thành công
+            renderCardPopup();
+        } else {
+            alert("Bạn không có đủ Vàng để ép phôi thẻ này!");
+        }
+    }
+};
+
+// Hàm bấm LẮP THẺ vào súng/giáp
+window.equipCardToItem = function(cardType) {
+    let slots = gData.itemCards[currentPopupItemId];
+    let emptyIdx = slots.indexOf(null);
+    if(emptyIdx === -1) return alert("Trang bị này đã cắm đầy khe! Hãy gỡ thẻ cũ ra trước.");
+    
+    if(gData.craftedCards[cardType] > 0) {
+        gData.craftedCards[cardType]--;
+        slots[emptyIdx] = cardType;
+        save(); renderCardPopup();
+        AudioSys.playTone(600, 'sine', 0.1);
+    }
+};
+
+// Hàm bấm GỠ THẺ khỏi súng/giáp
+window.unequipCardFromItem = function(slotIndex) {
+    let card = gData.itemCards[currentPopupItemId][slotIndex];
+    if(card) {
+        // Trả lại đúng kho thẻ ĐÃ ÉP
+        gData.craftedCards[card] = (gData.craftedCards[card] || 0) + 1;
+        gData.itemCards[currentPopupItemId][slotIndex] = null;
+        save(); renderCardPopup();
+    }
+};
+
+window.unequipCardFromItem = function(slotIndex) {
+    let card = gData.itemCards[currentPopupItemId][slotIndex];
+    if(card) {
+        gData.inventory[card] = (gData.inventory[card] || 0) + 1;
+        gData.itemCards[currentPopupItemId][slotIndex] = null;
+        save(); renderCardPopup();
+    }
+};
+
     window.addEventListener('online', async () => { const userLabel = document.getElementById('menuUsername'); if (userLabel) userLabel.innerText = currentUsername.toUpperCase(); if (window.AuthSys) { window.AuthSys.msg("ĐÃ KHÔI PHỤC KẾT NỐI CLOUD!", "#0f0"); if (window.auth && window.auth.currentUser) { await window.AuthSys.saveSync(); } } });
     window.addEventListener('offline', () => { const userLabel = document.getElementById('menuUsername'); if (userLabel) userLabel.innerText = currentUsername.toUpperCase() + " (OFFLINE)"; if (window.AuthSys) { window.AuthSys.msg("BẠN ĐANG CHƠI CHẾ ĐỘ OFFLINE", "var(--r)"); } });
     
     function showNetworkBanner(text, type) { if (state === 'PLAYING' || state === 'PAUSED' || state === 'PAUSED_MANUAL') return; let banner = document.getElementById('network-status-alert'); if (!banner) { banner = document.createElement('div'); banner.id = 'network-status-alert'; document.body.appendChild(banner); } banner.innerText = text; banner.style.fontFamily = "'Orbitron', sans-serif"; banner.style.textTransform = "uppercase"; banner.style.fontSize = "12px"; if (type === 'online') { banner.className = 'online-style show'; banner.style.borderBottom = "2px solid var(--p)"; banner.style.boxShadow = "0 0 15px rgba(0, 255, 255, 0.4)"; } else { banner.className = 'offline-style show'; banner.style.borderBottom = "2px solid var(--r)"; banner.style.boxShadow = "0 0 15px rgba(255, 51, 51, 0.4)"; } setTimeout(() => { banner.classList.remove('show'); }, 3000); }
-    window.addEventListener('online', async () => { showNetworkBanner(">> HỆ THỐNG: ĐÃ TRỰC TUYẾN (CLOUD ON)", "online"); const userLabel = document.getElementById('menuUsername'); if (userLabel) userLabel.innerText = currentUsername.toUpperCase(); if (window.AuthSys && window.auth?.currentUser) { await window.AuthSys.saveSync(); } });
+    window.addEventListener('online', () => { 
+    showNetworkBanner(">> HỆ THỐNG: ĐÃ TRỰC TUYẾN (CLOUD ON)", "online"); 
+    const userLabel = document.getElementById('menuUsername'); 
+    if (userLabel) userLabel.innerText = currentUsername.toUpperCase(); 
+    // Không ép tải lên (saveSync) ngay khi có mạng nữa, để onSnapshot tự kéo dữ liệu mới nhất về
+});
+
     window.addEventListener('offline', () => { showNetworkBanner(">> CẢNH BÁO: CHẾ ĐỘ NGOẠI TUYẾN (OFFLINE)", "offline"); const userLabel = document.getElementById('menuUsername'); if (userLabel) userLabel.innerText = currentUsername.toUpperCase() + " (OFFLINE)"; });
     
     window.openModeScreen = function() { document.getElementById('menuScreen').classList.add('hidden'); document.getElementById('modeScreen').classList.remove('hidden'); if (gData.hasWon) { document.getElementById('btnModeEndless').style.display = 'block'; document.getElementById('lockedEndless').style.display = 'none'; } else { document.getElementById('btnModeEndless').style.display = 'none'; document.getElementById('lockedEndless').style.display = 'block'; } };
