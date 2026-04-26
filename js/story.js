@@ -51,15 +51,24 @@ function typeStory() {
 }
 
 window.playIntroFlow = function() {
+    // Fetch the elements locally for this function
     const introScreen = document.getElementById('introScreen');
     const introTextEl = document.getElementById('introText');
     const skipBtn = document.getElementById('skipIntroBtn');
-    
-    if (typeof gData !== 'undefined' && gData.hasSeenIntro) {
+
+    if (!introScreen || !introTextEl || !skipBtn) return; // Safety check
+
+    // Sử dụng hàm an toàn thay vì gọi trực tiếp gData
+    if (typeof window.isIntroSeen === 'function' && window.isIntroSeen()) {
         introScreen.classList.add('hidden');
-        if (typeof window.startMode === 'function') { window.startMode(false); } else { window.startGame(); }
+        if (typeof window.startMode === 'function') { 
+            window.startMode(false); 
+        } else { 
+            window.startGame(); 
+        }
         return;
     }
+    
     introScreen.classList.remove('hidden'); 
     introTextEl.innerHTML = ""; 
     lineIndex = 0; 
@@ -74,14 +83,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const skipBtn = document.getElementById('skipIntroBtn');
     if (skipBtn) {
         skipBtn.onclick = () => {
-            if (typeof gData !== 'undefined') { gData.hasSeenIntro = true; typeof save === 'function' && save(); }
-            document.getElementById('introScreen').classList.add('hidden');
-            if (typeof AudioSys !== 'undefined' && AudioSys.enabled) {
-                AudioSys.init(); 
-                if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume(); 
-                AudioSys.playTone(300, 'sawtooth', 1.0, 0.5, 1500);
-            }
-            if (typeof window.startMode === 'function') { window.startMode(false); } else { window.startGame(); }
-        };
+    // Kích hoạt lưu dữ liệu thông qua cầu nối
+    if (typeof window.completeIntro === 'function') { window.completeIntro(); }
+    
+    introScreen.classList.add('hidden');
+    if (typeof AudioSys !== 'undefined' && AudioSys.enabled) {
+        AudioSys.init(); if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume(); AudioSys.playTone(300, 'sawtooth', 1.0, 0.5, 1500);
+    }
+    if (typeof window.startMode === 'function') { window.startMode(false); } else { window.startGame(); }
+       };
     }
 });
