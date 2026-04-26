@@ -1380,6 +1380,9 @@ div.innerHTML = `<span class="equip-icon" style="color:${item.color||'#fff'}">${
     setInterval(window.updateMenuGachaBadge, 1000);
 
     window.startGame = startGame; window.togglePause = togglePause; window.buyUpgrade = buyUpgrade; 
+// Thêm 2 cầu nối để xử lý Intro an toàn
+window.completeIntro = function() { gData.hasSeenIntro = true; save(); };
+window.isIntroSeen = function() { return gData.hasSeenIntro === true; };
     window.openCrafting = function() {
     document.getElementById('menuScreen').classList.add('hidden');
     document.getElementById('craftScreen').classList.remove('hidden');
