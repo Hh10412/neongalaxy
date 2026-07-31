@@ -61,9 +61,9 @@
     <input autocomplete="off"class="input-box"id="inpUser"placeholder="Tên đăng nhập"> 
     <div class="pass-container">
     <input autocomplete="off" class="input-box" id="inpPass" placeholder="Mật khẩu" type="password" style="margin-bottom: 8px;">
-<label class="cyber-checkbox">
+<label class="password-toggle" title="Hiển thị mật khẩu" aria-label="Hiển thị mật khẩu">
     <input type="checkbox" onchange="togglePassCheckbox('inpPass', this)">
-    <span class="checkmark"></span> HIỂN THỊ MẬT KHẨU
+    <span class="eye-icon" aria-hidden="true"></span>
 </label>
 
 </div>
@@ -90,21 +90,21 @@
     <h2 style="color:var(--y);text-shadow:0 0 10px var(--y);font-style:italic">ĐỔI MẬT KHẨU</h2>
     <p style="font-size:12px;color:#aaa;margin-bottom:20px;letter-spacing:1px">Cập nhật mật khẩu của bạn</p>
     <input autocomplete="off" class="input-box" id="inpOldPass" placeholder="Mật khẩu hiện tại" type="password" style="margin-bottom: 8px;">
-<label class="cyber-checkbox">
+<label class="password-toggle" title="Hiển thị mật khẩu hiện tại" aria-label="Hiển thị mật khẩu hiện tại">
     <input type="checkbox" onchange="togglePassCheckbox('inpOldPass', this)">
-    <span class="checkmark"></span> HIỂN THỊ
+    <span class="eye-icon" aria-hidden="true"></span>
 </label>
 
 <input autocomplete="off" class="input-box" id="inpNewPass" placeholder="Mật khẩu mới" type="password" style="margin-bottom: 8px;">
-<label class="cyber-checkbox">
+<label class="password-toggle" title="Hiển thị mật khẩu mới" aria-label="Hiển thị mật khẩu mới">
     <input type="checkbox" onchange="togglePassCheckbox('inpNewPass', this)">
-    <span class="checkmark"></span> HIỂN THỊ
+    <span class="eye-icon" aria-hidden="true"></span>
 </label>
 
 <input autocomplete="off" class="input-box" id="inpConfirmPass" placeholder="Xác nhận mật khẩu mới" type="password" style="margin-bottom: 8px;">
-<label class="cyber-checkbox">
+<label class="password-toggle" title="Hiển thị xác nhận mật khẩu" aria-label="Hiển thị xác nhận mật khẩu">
     <input type="checkbox" onchange="togglePassCheckbox('inpConfirmPass', this)">
-    <span class="checkmark"></span> HIỂN THỊ
+    <span class="eye-icon" aria-hidden="true"></span>
 </label>
 
 
