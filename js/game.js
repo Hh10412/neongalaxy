@@ -62,7 +62,7 @@ async function claimOfflineReward() {
   // ví dụ: 1 giây = 1 coin
   const reward = Math.floor(diff / 1000);
 
-  gData.coin += reward;
+  gData.coins = (gData.coins || 0) + reward;
   gData.lastClaimTime = now;
 
   save();
