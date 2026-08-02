@@ -1,8 +1,4 @@
-// sw.js - Service Worker cho Neon Galaxy (Fixed & Optimized)
-
-const CACHE_NAME = 'neon-galaxy-v5.8.4.1';
-
-// Gom tất cả vào một mảng ASSETS duy nhất
+const CACHE_NAME = 'neon-galaxy-v5.8.4.2';
 const ASSETS = [
     './',
     './index.html',
@@ -12,8 +8,7 @@ const ASSETS = [
     './js/story.js',
     './js/firebase-init.js',
     './js/sw-register.js',
-    'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap',
-    'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'
+    './js/crypto-js.min.js' // Tải file này về máy và lưu vào thư mục js để chạy offline an toàn
 ];
 
 // 1. Cài đặt: Lưu trữ tài nguyên vào Cache
@@ -21,7 +16,6 @@ self.addEventListener('install', (event) => {
     self.skipWaiting(); 
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            // Sử dụng cache.addAll để tải tất cả cùng lúc
             return cache.addAll(ASSETS);
         })
     );
@@ -52,8 +46,7 @@ self.addEventListener('message', (event) => {
 
 // 4. Xử lý yêu cầu mạng (Stale-While-Revalidate)
 self.addEventListener('fetch', (event) => {
-    // Chỉ xử lý các yêu cầu GET và không xử lý Firebase/Analytics nếu cần
-    if (event.request.method !== 'GET' || event.request.url.includes('firestore.googleapis.com')) return;
+    if (event.request.method !== 'GET' || event.request.url.includes('://googleapis.com')) return;
 
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {

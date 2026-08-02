@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
-  <title>Neon Galaxy: Overdrive v5.8.4.1.1 - SECURE CLOUD</title>
+  <title>Neon Galaxy: Overdrive v5.8.4.2 - SECURE CLOUD</title>
   <meta content="yes" name="apple-mobile-web-app-capable">
   <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
   <meta content="yes" name="mobile-web-app-capable">
@@ -59,14 +59,14 @@
     <h1 style="font-size:40px;margin:0;text-shadow:0 0 20px var(--p);color:#fff;text-align:center"id="authTitle">HỆ THỐNG<br><span style="color:var(--s)">ĐĂNG NHẬP</span></h1>
     <p style="font-size:12px;color:#aaa;margin-bottom:30px">Vui lòng định danh phi công</p>
     <input autocomplete="off"class="input-box"id="inpUser"placeholder="Tên đăng nhập"> 
-    <div class="pass-container">
-    <input autocomplete="off" class="input-box" id="inpPass" placeholder="Mật khẩu" type="password" style="margin-bottom: 8px;">
-<label class="password-toggle" title="Hiển thị mật khẩu" aria-label="Hiển thị mật khẩu">
-    <input type="checkbox" onchange="togglePassCheckbox('inpPass', this)">
-    <span class="eye-icon" aria-hidden="true"></span>
-</label>
+    <div class="pass-wrapper">
+        <input autocomplete="off" class="input-box" id="inpPass" placeholder="Mật khẩu" type="password">
+        <div class="pass-icon" onclick="window.togglePassIcon('inpPass', this)">
+            <svg class="icon-eye" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <svg class="icon-eye-slash" viewBox="0 0 24 24"><path d="M11.83 9L15 12.16V12a3 3 0 00-3-3h-.17zm-4.3.8l1.55 1.55c-.05.21-.08.43-.08.65a3 3 0 003 3c.22 0 .44-.03.65-.08l1.55 1.55c-1.37.59-2.92.59-4.29 0a5.006 5.006 0 01-2.38-2.38c.59-1.37.59-2.92 0-4.29zm8.59 4.3l1.55 1.55c.61-.41 1.17-.91 1.66-1.48-1.57-3.6-5.11-6.17-9.33-6.17-1.12 0-2.21.2-3.23.57l1.79 1.79c.45-.11.91-.16 1.39-.16 2.76 0 5 2.24 5 5 0 .48-.05.94-.16 1.39zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"/></svg>
+        </div>
+    </div>
 
-</div>
     <div id="authMsg"style="color:var(--r);font-size:12px;margin-bottom:15px;height:15px"></div>
     <div id="authBtns"style="display:flex;flex-direction:column;align-items:center">
       <button class="btn-main btn-small"onclick="window.AuthSys.login()"style="padding:12px 40px;font-size:14px"id="authMainBtn">ĐĂNG NHẬP</button>
@@ -89,24 +89,29 @@
   <div class="hidden overlay"id="changePassScreen">
     <h2 style="color:var(--y);text-shadow:0 0 10px var(--y);font-style:italic">ĐỔI MẬT KHẨU</h2>
     <p style="font-size:12px;color:#aaa;margin-bottom:20px;letter-spacing:1px">Cập nhật mật khẩu của bạn</p>
-    <input autocomplete="off" class="input-box" id="inpOldPass" placeholder="Mật khẩu hiện tại" type="password" style="margin-bottom: 8px;">
-<label class="password-toggle" title="Hiển thị mật khẩu hiện tại" aria-label="Hiển thị mật khẩu hiện tại">
-    <input type="checkbox" onchange="togglePassCheckbox('inpOldPass', this)">
-    <span class="eye-icon" aria-hidden="true"></span>
-</label>
+    <div class="pass-wrapper">
+        <input autocomplete="off" class="input-box" id="inpOldPass" placeholder="Mật khẩu hiện tại" type="password">
+        <div class="pass-icon" onclick="window.togglePassIcon('inpOldPass', this)">
+            <svg class="icon-eye" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <svg class="icon-eye-slash" viewBox="0 0 24 24"><path d="M11.83 9L15 12.16V12a3 3 0 00-3-3h-.17zm-4.3.8l1.55 1.55c-.05.21-.08.43-.08.65a3 3 0 003 3c.22 0 .44-.03.65-.08l1.55 1.55c-1.37.59-2.92.59-4.29 0a5.006 5.006 0 01-2.38-2.38c.59-1.37.59-2.92 0-4.29zm8.59 4.3l1.55 1.55c.61-.41 1.17-.91 1.66-1.48-1.57-3.6-5.11-6.17-9.33-6.17-1.12 0-2.21.2-3.23.57l1.79 1.79c.45-.11.91-.16 1.39-.16 2.76 0 5 2.24 5 5 0 .48-.05.94-.16 1.39zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"/></svg>
+        </div>
+    </div>
 
-<input autocomplete="off" class="input-box" id="inpNewPass" placeholder="Mật khẩu mới" type="password" style="margin-bottom: 8px;">
-<label class="password-toggle" title="Hiển thị mật khẩu mới" aria-label="Hiển thị mật khẩu mới">
-    <input type="checkbox" onchange="togglePassCheckbox('inpNewPass', this)">
-    <span class="eye-icon" aria-hidden="true"></span>
-</label>
+    <div class="pass-wrapper">
+        <input autocomplete="off" class="input-box" id="inpNewPass" placeholder="Mật khẩu mới" type="password">
+        <div class="pass-icon" onclick="window.togglePassIcon('inpNewPass', this)">
+            <svg class="icon-eye" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <svg class="icon-eye-slash" viewBox="0 0 24 24"><path d="M11.83 9L15 12.16V12a3 3 0 00-3-3h-.17zm-4.3.8l1.55 1.55c-.05.21-.08.43-.08.65a3 3 0 003 3c.22 0 .44-.03.65-.08l1.55 1.55c-1.37.59-2.92.59-4.29 0a5.006 5.006 0 01-2.38-2.38c.59-1.37.59-2.92 0-4.29zm8.59 4.3l1.55 1.55c.61-.41 1.17-.91 1.66-1.48-1.57-3.6-5.11-6.17-9.33-6.17-1.12 0-2.21.2-3.23.57l1.79 1.79c.45-.11.91-.16 1.39-.16 2.76 0 5 2.24 5 5 0 .48-.05.94-.16 1.39zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"/></svg>
+        </div>
+    </div>
 
-<input autocomplete="off" class="input-box" id="inpConfirmPass" placeholder="Xác nhận mật khẩu mới" type="password" style="margin-bottom: 8px;">
-<label class="password-toggle" title="Hiển thị xác nhận mật khẩu" aria-label="Hiển thị xác nhận mật khẩu">
-    <input type="checkbox" onchange="togglePassCheckbox('inpConfirmPass', this)">
-    <span class="eye-icon" aria-hidden="true"></span>
-</label>
-
+    <div class="pass-wrapper">
+        <input autocomplete="off" class="input-box" id="inpConfirmPass" placeholder="Xác nhận mật khẩu mới" type="password">
+        <div class="pass-icon" onclick="window.togglePassIcon('inpConfirmPass', this)">
+            <svg class="icon-eye" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <svg class="icon-eye-slash" viewBox="0 0 24 24"><path d="M11.83 9L15 12.16V12a3 3 0 00-3-3h-.17zm-4.3.8l1.55 1.55c-.05.21-.08.43-.08.65a3 3 0 003 3c.22 0 .44-.03.65-.08l1.55 1.55c-1.37.59-2.92.59-4.29 0a5.006 5.006 0 01-2.38-2.38c.59-1.37.59-2.92 0-4.29zm8.59 4.3l1.55 1.55c.61-.41 1.17-.91 1.66-1.48-1.57-3.6-5.11-6.17-9.33-6.17-1.12 0-2.21.2-3.23.57l1.79 1.79c.45-.11.91-.16 1.39-.16 2.76 0 5 2.24 5 5 0 .48-.05.94-.16 1.39zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"/></svg>
+        </div>
+    </div>
 
     <div id="changePassMsg"style="color:var(--r);font-size:12px;margin-bottom:15px;height:15px"></div>
     <div style="display:flex;flex-direction:column;align-items:center"><button class="btn-main"onclick="executeChangePass()"style="width:200px;margin-bottom:10px">LƯU THAY ĐỔI</button> <button class="btn-main"onclick="closeChangePass()"style="background:#333;color:#fff;width:200px;border:1px solid #555">HỦY BỎ</button></div>
@@ -140,7 +145,7 @@
         </div>
     </div>
     <h1 style="font-size:50px;margin:0;text-shadow:0 0 20px var(--p),0 0 40px var(--s);color:#fff;text-align:center;font-style:italic">NEON<br><span style="color:var(--p)">GALAXY</span></h1>    
-    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.8.4.1 SECURE</p>
+    <p style="font-size:12px;color:#aaa;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 5px #fff">OVERDRIVE v5.8.4.2 SECURE</p>
     
     <div style="background:rgba(0,255,255,.1);border:1px solid var(--p);padding:5px 15px;border-radius:20px;font-size:12px;margin-bottom:30px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;box-shadow:0 0 10px rgba(0,255,255,.2) inset" onclick="openProfile()">
         <img id="menuAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=guest" style="width:26px;height:26px;border-radius:50%;background:#000"> 
@@ -340,7 +345,7 @@
         <button class="btn-main" onclick="closeCardPopup()" style="width: 100%; background: #333; color: #fff; margin:0;">ĐÓNG KHO</button>
     </div>
 </div>
-
+  <script src="./js/crypto-js.js"></script>
   <script src="./js/story.js"></script>
   <script src="./js/firebase-init.js"></script>
   <script src="./js/game.js"></script>
