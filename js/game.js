@@ -4,24 +4,23 @@
     let game = { frame: 0, score: 0, lvl: 1, exp: 0, nextExp: 100, ult: 0, flash: 0, shake: 0, boss:false, surviveFrames:0 };  
     let tX = window.innerWidth / 2; let tY = window.innerHeight - 150;
     let gData = JSON.parse(localStorage.getItem('neonGalaxyData')) || {
-  coins: 0,
-  highScore: 0,
-  gems: 0,
-  hasSeenIntro: false,
-  skillLevels: {
-    dmg: 0,
-    hp: 0,
-    invinc: 0,
-    fireRate: 0,
-    crit: 0
-  }
+    gold: 0,
+    highScore: 0,
+    gems: 0,
+    hasSeenIntro: false,
+    // Thêm hệ thống skillLevels mới, xóa bỏ skillTree kiểu true/false cũ
+    skillLevels: {
+        dmg: 0,       // Gốc: Sát thương
+        hp: 0,        // Nhánh 1: Máu
+        invinc: 0,    // Nhánh 1.1: Bất tử (0.5s/cấp)
+        fireRate: 0,  // Nhánh 2: Tốc độ bắn
+        crit: 0       // Nhánh 2.1: Chí mạng
+    }
 };
 
+// Đảm bảo dữ liệu cũ không bị lỗi nếu trước đó chưa có skillLevels
 if(!gData.skillLevels) {
-  gData.skillLevels = { dmg: 0, hp: 0, invinc: 0, fireRate: 0, crit: 0 };
-}
-if (typeof gData.coins !== 'number') {
-  gData.coins = typeof gData.gold === 'number' ? gData.gold : 0;
+    gData.skillLevels = { dmg: 0, hp: 0, invinc: 0, fireRate: 0, crit: 0 };
 }
 
     let currentUsername = ""; let dbListener = null;
@@ -61,9 +60,11 @@ async function claimOfflineReward() {
   if (diff <= 0) return;
 
   // ví dụ: 1 giây = 1 coin
- const reward = Math.floor(diff / 1000);
-gData.coins += reward;
-gData.lastClaimTime = now;
+  const reward = Math.floor(diff / 1000);
+
+  gData.coin += reward;
+  gData.lastClaimTime = now;
+
   save();
 }
 // Gọi hàm này khi bắt đầu game hoặc khi có mạng lại
@@ -297,64 +298,74 @@ const verifyIntegrity = () => {
     function closeChangePass() { document.getElementById('changePassScreen').classList.add('hidden'); document.getElementById('profileScreen').classList.remove('hidden'); }
     async function executeChangePass() { let oldP = document.getElementById('inpOldPass').value.trim(), newP = document.getElementById('inpNewPass').value.trim(), confP = document.getElementById('inpConfirmPass').value.trim(), msgEl = document.getElementById('changePassMsg'); if(!oldP || !newP || !confP) return (msgEl.innerText = "Vui lòng nhập đủ!", msgEl.style.color="var(--r)"); if(newP !== confP) return (msgEl.innerText = "Mật khẩu mới không khớp!", msgEl.style.color="var(--r)"); if(newP.length < 6) return (msgEl.innerText = "Mật khẩu mới phải từ 6 ký tự!", msgEl.style.color="var(--r)"); let user = window.auth.currentUser; if(!user) return; msgEl.innerText = "Đang kiểm tra hệ thống..."; msgEl.style.color = "var(--y)"; try { await window.fbAuth.reauthenticateWithCredential(user, window.fbAuth.EmailAuthProvider.credential(user.email, oldP)); await window.fbAuth.updatePassword(user, newP); alert("Mật khẩu đã được cập nhật an toàn!"); closeChangePass(); } catch(e) { msgEl.innerText = e.code === 'auth/invalid-credential' ? "Mật khẩu hiện tại không đúng!" : "Lỗi kết nối máy chủ!"; msgEl.style.color = "var(--r)"; } }
     
-const EQUIP_DB = {  
+    const AudioSys = {  
+        ctx: null, master: null, enabled: true, bgmInterval: null,  
+        init: function() { if(this.ctx) return; const A = window.AudioContext || window.webkitAudioContext; this.ctx = new A(); this.master = this.ctx.createGain(); this.master.gain.value = 1; this.master.connect(this.ctx.destination); },  
+        updateButtons: function() { const text = this.enabled ? 'ÂM THANH: BẬT 🔔' : 'ÂM THANH: TẮT 🔕', color = this.enabled ? 'var(--p)' : '#fff', border = this.enabled ? 'var(--p)' : '#555'; ['sndBtnProf', 'sndBtnInGame'].forEach(id=>{let b=document.getElementById(id); if(b){b.innerHTML=text; b.style.color=color; b.style.borderColor=border;}}); },
+        toggle: function() { this.enabled = !this.enabled; this.updateButtons(); if(this.enabled) { this.init(); if(this.ctx.state === 'suspended') this.ctx.resume(); if(state === 'PLAYING') this.playBGM(); } else { this.stopBGM(); } },  
+        playTone: function(freq, type, dur, vol = 1, slide = 0) { if(!this.enabled) return; try { const o = this.ctx.createOscillator(); const g = this.ctx.createGain(); o.type = type; o.frequency.setValueAtTime(freq, this.ctx.currentTime); if(slide) o.frequency.exponentialRampToValueAtTime(slide, this.ctx.currentTime + dur); g.gain.setValueAtTime(vol, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur); o.connect(g); g.connect(this.master); o.start(); o.stop(this.ctx.currentTime + dur); } catch(e) {} },  
+        playNoise: function(dur) { if(!this.enabled) return; const bufSize = this.ctx.sampleRate * dur; const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate); const data = buf.getChannelData(0); for(let i=0; i<bufSize; i++) data[i] = Math.random()*2 - 1; const src = this.ctx.createBufferSource(); src.buffer = buf; const g = this.ctx.createGain(); const f = this.ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1000; g.gain.setValueAtTime(1, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur); src.connect(f); f.connect(g); g.connect(this.master); src.start(); },  
+        playBGM: function() { if(!this.enabled) return; this.stopBGM(); const notes = [110, 110, 220, 110, 164.81, 110, 146.83, 110]; let step = 0; this.bgmInterval = setInterval(() => { this.playTone(notes[step % notes.length], 'sawtooth', 0.2, 0.15); step++; }, 220); },  
+        stopBGM: function() { if(this.bgmInterval) { clearInterval(this.bgmInterval); this.bgmInterval = null; } },  
+        sfxShoot: function(type) { if(type === 'laser' || type === 'omega') this.playTone(900, 'sawtooth', 0.1, 0.2, 100); else if(type === 'spread' || type === 'nova') this.playTone(200, 'square', 0.1, 0.3, 50); else if(type === 'dark') this.playTone(100, 'square', 0.3, 0.4, 20); else this.playTone(500, 'triangle', 0.1, 0.2, 200); },  
+        sfxExplode: function() { this.playNoise(0.3); }, sfxHit: function() { this.playTone(150, 'sawtooth', 0.2, 0.5, 50); }, sfxCoin: function() { this.playTone(1200, 'sine', 0.1, 0.2, 1800); }, sfxHeal: function() { this.playTone(600, 'sine', 0.3, 0.4, 1200); }, sfxLevel: function() { this.playTone(440, 'sine', 0.3, 0.5); setTimeout(()=>this.playTone(880, 'sine', 0.5, 0.5), 150); }  
+    };  
+      
+    const EQUIP_DB = {  
     weapons: { 
-        // TIER 1 - CƠ BẢN (dmgM: 1.0)
-        w1: { n: "Blaster", d: "Cơ bản", cost: 0, type:'std', color:'#0ff', fr: 15, dmgM: 1.0 }, 
-        w2: { n: "Shotgun", d: "Bắn chùm", cost: 500, type:'spread', color:'#ff0', fr: 35, dmgM: 1.0 }, 
-        w3: { n: "Laser", d: "Xuyên thấu", cost: 1200, type:'laser', color:'#f0f', fr: 45, dmgM: 1.0 }, 
-        w4: { n: "Plasma", d: "Tìm mục tiêu", cost: 2500, type:'homing', color:'#0f0', fr: 50, dmgM: 1.0 }, 
-        w5: { n: "Gatling", d: "Siêu tốc", cost: 5000, type:'gatling', color:'#ff9900', fr: 6, dmgM: 1.0 }, 
-        w6: { n: "Supernova", d: "Đạn 5 tia", cost: 12000, type:'nova', color:'#ff0055', fr: 35, dmgM: 1.0 }, 
-        w7: { n: "Dark Matter", d: "Cầu hủy diệt", cost: 30000, type:'dark', color:'#6600ff', fr: 60, dmgM: 1.0 }, 
-        w8: { n: "Omega Beam", d: "Tia phán xét", cost: 80000, type:'omega', color:'#ffffff', fr: 20, dmgM: 1.0 },
-        
-        // TIER 2 - TRUNG CẤP (dmgM: 2.0 -> 4.5)
-        w9: { n: "Pulse Rifle", d: "ST x2.0, Bắn nhanh", cost: 150000, type:'std', color:'#00ffcc', fr: 10, dmgM: 2.0 },
-        w10:{ n: "Hellfire", d: "ST x2.0, Chùm lửa", cost: 300000, type:'spread', color:'#ff3300', fr: 25, dmgM: 2.0 },
-        w11:{ n: "Death Ray", d: "ST x2.5, Laser", cost: 500000, type:'laser', color:'#ff0000', fr: 30, dmgM: 2.5 },
-        w12:{ n: "Swarm", d: "ST x2.5, Bầy ong", cost: 850000, type:'homing', color:'#33cc33', fr: 35, dmgM: 2.5 },
-        w13:{ n: "Vulcan", d: "ST x3.0, Gatling", cost: 1500000, type:'gatling', color:'#ffcc00', fr: 4, dmgM: 3.0 },
-        w14:{ n: "Hypernova", d: "ST x3.5, Đạn 5 tia", cost: 2800000, type:'nova', color:'#ff00aa', fr: 25, dmgM: 3.5 },
-        w15:{ n: "Void Sphere", d: "ST x4.0, Hố đen", cost: 5000000, type:'dark', color:'#4400cc', fr: 45, dmgM: 4.0 },
-        w16:{ n: "Genesis Ray", d: "ST x4.5, Cực quang", cost: 8000000, type:'omega', color:'#ccffff', fr: 15, dmgM: 4.5 },
-        
-        // TIER 3 - CAO CẤP (dmgM: 5.0 -> 15.0)
-        w17:{ n: "Starfall", d: "ST x5.0, Mưa đạn", cost: 12000000, type:'spread', color:'#ffff99', fr: 18, dmgM: 5.0 },
-        w18:{ n: "Eclipse", d: "ST x6.0, Laser đen", cost: 18000000, type:'laser', color:'#1a1a1a', fr: 20, dmgM: 6.0 },
-        w19:{ n: "Neutron", d: "ST x7.0, Săn lùng", cost: 25000000, type:'homing', color:'#00ff66', fr: 20, dmgM: 7.0 },
-        w20:{ n: "Annihilator", d: "ST x8.0, Quét sạch", cost: 35000000, type:'gatling', color:'#ff0033', fr: 3, dmgM: 8.0 },
-        w21:{ n: "Cosmic Storm", d: "ST x10.0, Siêu bão", cost: 50000000, type:'nova', color:'#ff33cc', fr: 15, dmgM: 10.0 },
-        w22:{ n: "Singularity", d: "ST x12.0, Lỗ đen", cost: 75000000, type:'dark', color:'#110033', fr: 30, dmgM: 12.0 },
-        w23:{ n: "God's Wrath", d: "ST x14.0, Phán quyết", cost: 120000000, type:'omega', color:'#ffee00', fr: 10, dmgM: 14.0 },
-        w24:{ n: "Reality Tear", d: "ST x15.0, Rách KG", cost: 200000000, type:'spread', color:'#ff00ff', fr: 10, dmgM: 15.0 },
-        w25:{ n: "THE OVERDRIVE", d: "ST x20.0, TỐI THƯỢNG", cost: 500000000, type:'omega', color:'#ffffff', fr: 5, dmgM: 20.0 }
+        w1: { n: "Blaster", d: "Cơ bản", cost: 0, type:'std', color:'#0ff', fr: 15 }, 
+        w2: { n: "Shotgun", d: "Bắn chùm", cost: 500, type:'spread', color:'#ff0', fr: 35 }, 
+        w3: { n: "Laser", d: "Xuyên thấu", cost: 1200, type:'laser', color:'#f0f', fr: 45 }, 
+        w4: { n: "Plasma", d: "Tìm mục tiêu", cost: 2500, type:'homing', color:'#0f0', fr: 50 }, 
+        w5: { n: "Gatling", d: "Siêu tốc", cost: 5000, type:'gatling', color:'#ff9900', fr: 6 }, 
+        w6: { n: "Supernova", d: "Đạn 5 tia", cost: 12000, type:'nova', color:'#ff0055', fr: 35 }, 
+        w7: { n: "Dark Matter", d: "Cầu hủy diệt", cost: 30000, type:'dark', color:'#6600ff', fr: 60 }, 
+        w8: { n: "Omega Beam", d: "Tia phán xét", cost: 80000, type:'omega', color:'#ffffff', fr: 20 },
+        // --- TIER MỚI (CÀY CUỐC) ---
+        w9: { n: "Pulse Rifle", d: "Liên thanh đạn to", cost: 150000, type:'std', color:'#00ffcc', fr: 10 },
+        w10:{ n: "Hellfire", d: "Chùm lửa rộng", cost: 300000, type:'spread', color:'#ff3300', fr: 25 },
+        w11:{ n: "Death Ray", d: "Laser sạc nhanh", cost: 500000, type:'laser', color:'#ff0000', fr: 30 },
+        w12:{ n: "Swarm", d: "Bầy ong Plasma", cost: 850000, type:'homing', color:'#33cc33', fr: 35 },
+        w13:{ n: "Vulcan", d: "Gatling tối thượng", cost: 1500000, type:'gatling', color:'#ffcc00', fr: 4 },
+        w14:{ n: "Hypernova", d: "Đạn 5 tia lướt", cost: 2800000, type:'nova', color:'#ff00aa', fr: 25 },
+        w15:{ n: "Void Sphere", d: "Hố đen kép", cost: 5000000, type:'dark', color:'#4400cc', fr: 45 },
+        w16:{ n: "Genesis Ray", d: "Ánh sáng chói", cost: 8000000, type:'omega', color:'#ccffff', fr: 15 },
+        w17:{ n: "Starfall", d: "Mưa đạn chùm", cost: 12000000, type:'spread', color:'#ffff99', fr: 18 },
+        w18:{ n: "Eclipse", d: "Laser hủy diệt", cost: 18000000, type:'laser', color:'#1a1a1a', fr: 20 },
+        w19:{ n: "Neutron", d: "Tự động săn lùng", cost: 25000000, type:'homing', color:'#00ff66', fr: 20 },
+        w20:{ n: "Annihilator", d: "Quét sạch bản đồ", cost: 35000000, type:'gatling', color:'#ff0033', fr: 3 },
+        w21:{ n: "Cosmic Storm", d: "Siêu bão Nova", cost: 50000000, type:'nova', color:'#ff33cc', fr: 15 },
+        w22:{ n: "Singularity", d: "Hố đen nguyên thủy", cost: 75000000, type:'dark', color:'#110033', fr: 30 },
+        w23:{ n: "God's Wrath", d: "Phán quyết", cost: 120000000, type:'omega', color:'#ffee00', fr: 10 },
+        w24:{ n: "Reality Tear", d: "Rách không gian", cost: 200000000, type:'spread', color:'#ff00ff', fr: 10 },
+        w25:{ n: "THE OVERDRIVE", d: "VŨ KHÍ TỐI THƯỢNG", cost: 500000000, type:'omega', color:'#ffffff', fr: 5 }
     },  
     hulls: { 
-        h1: { n: "Standard", d: "Cơ bản", cost: 0, hp:0, spd:0 }, 
+        h1: { n: "Standard", d: "Máu 100", cost: 0, hp:0, spd:0 }, 
         h2: { n: "Tanker", d: "Máu +200, Chậm", cost: 800, hp:200, spd:-0.03 }, 
-        h3: { n: "Racer", d: "Máu +50, Nhanh", cost: 1000, hp:50, spd:0.06 }, 
+        h3: { n: "Racer", d: "Máu -20, Nhanh", cost: 1000, hp:-20, spd:0.06 }, 
         h4: { n: "Titan", d: "Máu +500", cost: 3000, hp:500, spd:-0.05 }, 
-        h5: { n: "Phantom", d: "Máu +150, Tốc độ", cost: 6000, hp:150, spd:0.09 }, 
+        h5: { n: "Phantom", d: "Máu -50, Tốc độ", cost: 6000, hp:-50, spd:0.09 }, 
         h6: { n: "Juggernaut", d: "Máu +1000, Rùa", cost: 15000, hp:1000, spd:-0.07 }, 
-        h7: { n: "Eclipse", d: "Máu +400, Cân bằng", cost: 35000, hp:400, spd:0.04 }, 
+        h7: { n: "Eclipse", d: "Máu +300", cost: 35000, hp:300, spd:0.04 }, 
         h8: { n: "Genesis", d: "Máu +1500", cost: 80000, hp:1500, spd:0.08 },
-        h9: { n: "Gladiator", d: "Máu +2500, Tank", cost: 150000, hp:2500, spd:-0.02 },
-        h10:{ n: "Valkyrie", d: "Máu +1500, Nhanh", cost: 300000, hp:1500, spd:0.05 },
-        h11:{ n: "Colossus", d: "Máu +4000, Rùa", cost: 550000, hp:4000, spd:-0.08 },
-        h12:{ n: "Wraith", d: "Máu +2000, Siêu Nhanh", cost: 900000, hp:2000, spd:0.12 },
-        h13:{ n: "Behemoth", d: "Máu +7000, Tank", cost: 1600000, hp:7000, spd:-0.06 },
-        h14:{ n: "Interceptor", d: "Máu +4000, Nhanh", cost: 3000000, hp:4000, spd:0.06 },
-        h15:{ n: "Dreadnought", d: "Máu +12000", cost: 5500000, hp:12000, spd:-0.1 },
-        h16:{ n: "Spectre", d: "Máu +8000, Tốc độ", cost: 9000000, hp:8000, spd:0.08 },
-        h17:{ n: "Leviathan", d: "Máu +20000, Tank", cost: 15000000, hp:20000, spd:-0.05 },
-        h18:{ n: "Comet", d: "Máu +12000, Ánh sáng", cost: 24000000, hp:12000, spd:0.15 },
-        h19:{ n: "Aegis", d: "Máu +35000, Tank", cost: 40000000, hp:35000, spd:-0.02 },
-        h20:{ n: "Pulsar", d: "Máu +20000, Cân bằng", cost: 65000000, hp:20000, spd:0.07 },
-        h21:{ n: "Galactus", d: "Máu +60000, Tank", cost: 100000000, hp:60000, spd:-0.05 },
-        h22:{ n: "Quasar", d: "Máu +35000, Nhanh", cost: 160000000, hp:35000, spd:0.09 },
-        h23:{ n: "Supermassive", d: "Máu +90000, Rùa", cost: 250000000, hp:90000, spd:-0.08 },
-        h24:{ n: "Event Horizon", d: "Máu +50000, Tốc độ", cost: 380000000, hp:50000, spd:0.1 },
+        // --- TIER MỚI (CÀY CUỐC) ---
+        h9: { n: "Gladiator", d: "Máu +2000", cost: 150000, hp:2000, spd:-0.02 },
+        h10:{ n: "Valkyrie", d: "Máu +1200, Nhanh", cost: 300000, hp:1200, spd:0.05 },
+        h11:{ n: "Colossus", d: "Máu +3500", cost: 550000, hp:3500, spd:-0.08 },
+        h12:{ n: "Wraith", d: "Máu +800, Siêu Nhanh", cost: 900000, hp:800, spd:0.12 },
+        h13:{ n: "Behemoth", d: "Máu +6000", cost: 1600000, hp:6000, spd:-0.06 },
+        h14:{ n: "Interceptor", d: "Máu +2500, Nhanh", cost: 3000000, hp:2500, spd:0.06 },
+        h15:{ n: "Dreadnought", d: "Máu +10000", cost: 5500000, hp:10000, spd:-0.1 },
+        h16:{ n: "Spectre", d: "Máu +4000, Tốc độ", cost: 9000000, hp:4000, spd:0.08 },
+        h17:{ n: "Leviathan", d: "Máu +18000", cost: 15000000, hp:18000, spd:-0.05 },
+        h18:{ n: "Comet", d: "Máu +6000, Tốc ánh sáng", cost: 24000000, hp:6000, spd:0.15 },
+        h19:{ n: "Aegis", d: "Máu +30000", cost: 40000000, hp:30000, spd:-0.02 },
+        h20:{ n: "Pulsar", d: "Máu +12000, Cân bằng", cost: 65000000, hp:12000, spd:0.07 },
+        h21:{ n: "Galactus", d: "Máu +50000", cost: 100000000, hp:50000, spd:-0.05 },
+        h22:{ n: "Quasar", d: "Máu +25000, Nhanh", cost: 160000000, hp:25000, spd:0.09 },
+        h23:{ n: "Supermassive", d: "Máu +80000", cost: 250000000, hp:80000, spd:-0.08 },
+        h24:{ n: "Event Horizon", d: "Máu +40000, Tốc độ", cost: 380000000, hp:40000, spd:0.1 },
         h25:{ n: "IMMORTAL", d: "VỎ TÀU BẤT TỬ", cost: 600000000, hp:150000, spd:0.12 }
     },
     drones: {
@@ -362,9 +373,7 @@ const EQUIP_DB = {
         d2: { n: "Laser Bit", d: "Tia xuyên thấu", cost: 15000, color: '#f0f', fr: 90, dmg: 1.0, type: 'laser' },
         d3: { n: "Plasma Core", d: "Đạn đuổi tự động", cost: 45000, color: '#0f0', fr: 120, dmg: 0.8, type: 'homing' },
         d4: { n: "Nova Star", d: "Bắn chùm lửa", cost: 120000, color: '#ff3300', fr: 80, dmg: 0.6, type: 'spread' },
-        d5: { n: "Interceptor", d: "Pháo đài di động", cost: 500000, color: '#ffcc00', fr: 40, dmg: 1.2, type: 'std' },
-        d6: { n: "Black Widow", d: "Bắn chùm cực mạnh", cost: 5000000, color: '#6600ff', fr: 60, dmg: 1.5, type: 'spread' },
-        d7: { n: "Void Eye", d: "Xé rách hư không", cost: 50000000, color: '#b200ff', fr: 45, dmg: 2.5, type: 'homing' }
+        d5: { n: "Void Eye", d: "Mắt xé rách hư không", cost: 50000000, color: '#b200ff', fr: 45, dmg: 2.0, type: 'homing' }
     }
 };
 
@@ -714,10 +723,8 @@ if(gData.hiddenSkills.aura.activated) {
     }  
       
     function fire() {  
-    const w = EQUIP_DB.weapons[player.wep]; 
-    AudioSys.sfxShoot(w.type); 
-    let dmg = player.atk * (w.dmgM || 1);  
-    if(w.type === 'spread') { for(let i=-1; i<=1; i++) spawnBullet({x:player.x, y:player.y-20, vx:i*3, vy:-15, dmg:dmg*0.7, c:w.color, type:'std', w:4, h:10}); } 
+        const w = EQUIP_DB.weapons[player.wep]; AudioSys.sfxShoot(w.type); let dmg = player.atk;  
+        if(w.type === 'spread') { for(let i=-1; i<=1; i++) spawnBullet({x:player.x, y:player.y-20, vx:i*3, vy:-15, dmg:dmg*0.7, c:w.color, type:'std', w:4, h:10}); } 
         else if(w.type === 'laser') spawnBullet({x:player.x, y:player.y-20, vx:0, vy:-30, dmg:dmg*2.5, c:w.color, type:'pierce', h:80, w:6});  
         else if(w.type === 'homing') spawnBullet({x:player.x, y:player.y-20, vx:(Math.random()-0.5)*6, vy:-6, dmg:dmg*2, c:w.color, type:'homing', r:6});  
         else if(w.type === 'gatling') spawnBullet({x:player.x + (Math.random()*12-6), y:player.y-20, vx:(Math.random()*2-1), vy:-25, dmg:dmg*0.4, c:w.color, type:'std', w:3, h:15});
@@ -1707,15 +1714,8 @@ window.unequipCardFromItem = function(slotIndex) {
     window.openModeScreen = function() { document.getElementById('menuScreen').classList.add('hidden'); document.getElementById('modeScreen').classList.remove('hidden'); if (gData.hasWon) { document.getElementById('btnModeEndless').style.display = 'block'; document.getElementById('lockedEndless').style.display = 'none'; } else { document.getElementById('btnModeEndless').style.display = 'none'; document.getElementById('lockedEndless').style.display = 'block'; } };
     window.startMode = function(mode) { isHardcoreMode = (mode === 1 || mode === true); isEndlessMode = (mode === 2); document.getElementById('modeScreen').classList.add('hidden'); startGame(); };
     window.closeModeScreen = function() { document.getElementById('modeScreen').classList.add('hidden'); document.getElementById('menuScreen').classList.remove('hidden'); document.getElementById('menuScreen').classList.remove('hidden'); if(typeof window.updateMenuGachaBadge === 'function') window.updateMenuGachaBadge(); };
-        window.togglePassIcon = function(inputId, iconEl) {
-        const input = document.getElementById(inputId);
-        if (input.type === "password") {
-            input.type = "text";
-            iconEl.classList.add("show-pass");
-        } else {
-            input.type = "password";
-            iconEl.classList.remove("show-pass");
-        }
-    };
+    window.togglePassCheckbox = function(inputId, checkbox) {
+    document.getElementById(inputId).type = checkbox.checked ? "text" : "password";
+};
 
   })(); 
