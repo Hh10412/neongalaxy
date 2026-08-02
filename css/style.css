@@ -28,14 +28,15 @@ canvas{display:block;width:100vw;height:100vh}
 .input-box:focus{border-color:var(--s);box-shadow:0 0 15px rgba(255,0,255,.5) inset;color:var(--s)}
 .input-box::placeholder{color:rgba(0,255,255,.3)}
 
-/* NÚT CON MẮT HIỂN THỊ MẬT KHẨU */
-.password-toggle { display: flex; align-items: center; justify-content: center; width: 42px; height: 30px; margin: -2px auto 15px; cursor: pointer; user-select: none; transition: 0.2s; }
-.password-toggle input { display: none; }
-.password-toggle .eye-icon { width: 28px; height: 18px; border: 2px solid rgba(0, 255, 255, 0.7); border-radius: 75% 15%; display: inline-block; position: relative; transform: rotate(45deg); background: rgba(0,0,0,0.45); box-shadow: inset 0 0 6px rgba(0, 255, 255, 0.25), 0 0 8px rgba(0, 255, 255, 0.2); transition: 0.2s; }
-.password-toggle .eye-icon::before { content: ""; position: absolute; width: 8px; height: 8px; left: 50%; top: 50%; border-radius: 50%; background: rgba(0, 255, 255, 0.75); transform: translate(-50%, -50%); box-shadow: 0 0 8px var(--p); transition: 0.2s; }
-.password-toggle input:checked ~ .eye-icon { border-color: var(--s); background: rgba(255, 0, 255, 0.12); box-shadow: 0 0 14px var(--s), inset 0 0 8px rgba(255, 0, 255, 0.35); }
-.password-toggle input:checked ~ .eye-icon::before { background: var(--s); box-shadow: 0 0 10px var(--s); }
-.password-toggle:hover .eye-icon { transform: rotate(45deg) scale(1.08); filter: brightness(1.25); }
+/* TÍCH HỢP ICON MẮT VÀO INPUT */
+.pass-wrapper { position: relative; width: 250px; margin: 0 auto 15px auto; }
+.pass-wrapper .input-box { width: 100%; margin-bottom: 0; padding-right: 40px; box-sizing: border-box; }
+.pass-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; cursor: pointer; color: rgba(0, 255, 255, 0.4); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.pass-icon:hover { color: var(--p); filter: drop-shadow(0 0 8px var(--p)); transform: translateY(-50%) scale(1.1); }
+.pass-icon svg { width: 100%; height: 100%; fill: currentColor; }
+.icon-eye-slash { display: none; }
+.show-pass .icon-eye { display: none; }
+.show-pass .icon-eye-slash { display: block; }
 
 .lb-container{width:90%;max-width:400px;background:rgba(255,255,255,.03);border:1px solid var(--p);border-radius:8px;overflow:hidden;margin-bottom:20px}
 .lb-tabs{display:flex;background:rgba(0,0,0,.8)}
