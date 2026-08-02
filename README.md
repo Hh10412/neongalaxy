@@ -2,7 +2,7 @@
 
 Trò chơi bắn tàu không gian 2D với đồ họa Neon rực rỡ và hệ thống lưu trữ dữ liệu an toàn trên nền tảng đám mây.
 
-🚀 **[BẤM VÀO ĐÂY ĐỂ CHƠI NGAY](https://github.com/hh10412/neongalaxy)**
+🚀 **[BẤM VÀO ĐÂY ĐỂ CHƠI NGAY](https://hh10412.github.io)**
 
 ---
 
