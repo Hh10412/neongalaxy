@@ -1717,5 +1717,16 @@ window.unequipCardFromItem = function(slotIndex) {
     window.togglePassCheckbox = function(inputId, checkbox) {
     document.getElementById(inputId).type = checkbox.checked ? "text" : "password";
 };
+window.togglePassIcon = function(inputId, iconEl) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            iconEl.classList.add("show-pass");
+        } else {
+            input.type = "password";
+            iconEl.classList.remove("show-pass");
+        }
+    };
+
 
   })(); 
