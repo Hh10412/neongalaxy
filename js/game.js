@@ -159,13 +159,23 @@ async function getServerTime() {
   }
 }
 async function syncServerTimeOffset() {
+    if (!navigator.onLine) {
+        serverTimeOffset = 0;
+        return;
+    }
     try {
-        const res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+        // Cấu hình timeout ngắn (2 giây) để nếu mạng chập chờn sẽ hủy lệnh ngay, không treo game
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        
+        const res = await fetch('https://worldtimeapi.org', { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
         const data = await res.json();
         const serverTime = new Date(data.utc_datetime).getTime();
         serverTimeOffset = serverTime - Date.now();
     } catch {
-        serverTimeOffset = 0; // Fallback nếu offline
+        serverTimeOffset = 0; // Luôn an toàn tuyệt đối, quay về thời gian máy
     }
 }
 // Gọi hàm này ngay khi game vừa load lên
