@@ -80,19 +80,18 @@ window.playIntroFlow = function() {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    const skipBtn = document.getElementById('skipIntroBtn');
-    if (skipBtn) {
-        skipBtn.onclick = () => {
-            const introScreen = document.getElementById('introScreen');
-
-            // Kích hoạt lưu dữ liệu thông qua cầu nối
-            if (typeof window.completeIntro === 'function') { window.completeIntro(); }
-            
-            if (introScreen) introScreen.classList.add('hidden');
-            if (typeof AudioSys !== 'undefined' && AudioSys.enabled) {
-                AudioSys.init(); if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume(); AudioSys.playTone(300, 'sawtooth', 1.0, 0.5, 1500);
-            }
-            if (typeof window.startMode === 'function') { window.startMode(false); } else { window.startGame(); }
-       };
-    }
+  const skipBtn = document.getElementById('skipIntroBtn');
+  const introScreen = document.getElementById('introScreen');
+  if (skipBtn) {
+    skipBtn.onclick = () => {
+      if (typeof window.completeIntro === 'function') { window.completeIntro(); }
+      if (introScreen) introScreen.classList.add('hidden');
+      if (typeof AudioSys !== 'undefined' && AudioSys.enabled) {
+        AudioSys.init();
+        if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
+        AudioSys.playTone(300, 'sawtooth', 1.0, 0.5, 1500);
+      }
+      if (typeof window.startMode === 'function') { window.startMode(false); } else { window.startGame(); }
+    };
+  }
 });

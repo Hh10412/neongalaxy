@@ -20,37 +20,17 @@ window.secureClaimReward = async function() {
 const triggerOffline = () => { if (!isOfflineTriggered) { isOfflineTriggered = true; window.dispatchEvent(new Event('offlineReady')); } };
 
 const initFirebase = async () => {
-  // Bỏ dòng check if (!navigator.onLine) để cho phép Firebase nạp từ bộ nhớ local khi offline
-  const { initializeApp } = await import("https://gstatic.com");
-  const { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, deleteDoc } = await import("https://gstatic.com");
-  const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, onAuthStateChanged } = await import("https://gstatic.com");
+  if (!navigator.onLine) throw new Error("Offline");
+  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+  const { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+  const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
   
-  const firebaseConfig = { 
-    apiKey: atob("QUl6YVN5QjRhYkU3TVNNcGFjX3poZDJoMFZqb1xlXzZZWW56YW1R"), 
-    authDomain: atob("bmVvbmdhbGF4eS0zM2E1ZS5maXJlYmFzZWFwcC5jb20="), 
-    projectId: atob("bmVvbmdhbGF4eS0zM2E1ZQ=="), 
-    storageBucket: atob("bmVvbmdhbGF4eS0zM2E1ZS5maXJlYmFzZXN0b3JhZ2UuYXBw"), 
-    messagingSenderId: atob("ODU0MDc3Mjk1ODE3"), 
-    appId: atob("MTo4NTQwNzcyOTU4MTc6d2ViOjI5NjEzOThlM2Y4NWQ3MzNjMTkxMTg=") 
-  };
-  
-  const app = initializeApp(firebaseConfig); 
-  
-  // KÍCH HOẠT TÍNH NĂNG LƯU TRỮ OFFLINE VÀO Ổ CỨNG TRÌNH DUYỆT (INDEXEDDB)
-  window.db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager() // Hỗ trợ lưu dữ liệu đa tab không bị lỗi xung đột
-    })
-  });
-  
-  window.auth = getAuth(app); 
+  const firebaseConfig = { apiKey: atob("QUl6YVN5QjRhYkU3TVNNcGFjX3poZDJoMFZqb1hlXzZZWW56YW1R"), authDomain: atob("bmVvbmdhbGF4eS0zM2E1ZS5maXJlYmFzZWFwcC5jb20="), projectId: atob("bmVvbmdhbGF4eS0zM2E1ZQ=="), storageBucket: atob("bmVvbmdhbGF4eS0zM2E1ZS5maXJlYmFzZXN0b3JhZ2UuYXBw"), messagingSenderId: atob("ODU0MDc3Mjk1ODE3"), appId: atob("MTo4NTQwNzcyOTU4MTc6d2ViOjI5NjEzOThlM2Y4NWQ3MzNjMTkxMTg=") };
+  const app = initializeApp(firebaseConfig); window.db = getFirestore(app); window.auth = getAuth(app); 
   window.fb = { doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, deleteDoc };
   window.fbAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, onAuthStateChanged };
-  
-  isFirebaseLoaded = true; 
-  window.dispatchEvent(new Event('firebaseReady'));
+  isFirebaseLoaded = true; window.dispatchEvent(new Event('firebaseReady'));
 };
 
-// Gọi khởi tạo bất kể có mạng hay không
 initFirebase().catch((e) => { triggerOffline(); });
 setTimeout(() => { if (!isFirebaseLoaded) triggerOffline(); }, 3000);

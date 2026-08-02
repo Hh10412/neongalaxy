@@ -25,92 +25,6 @@ if (typeof gData.coins !== 'number') {
 }
 
     let currentUsername = ""; let dbListener = null;
-// --- BỔ SUNG HỆ THỐNG ÂM THANH AUDIOSYS ---
-window.AudioSys = {
-    enabled: true,
-    ctx: null,
-    bgmOsc: null,
-    bgmGain: null,
-    init() {
-        if (!this.ctx) {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            if (AudioCtx) this.ctx = new AudioCtx();
-        }
-    },
-    playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.1, rampVal = null) {
-        if (!this.enabled || !this.ctx) return;
-        try {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-            gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start();
-            osc.stop(this.ctx.currentTime + duration);
-        } catch(e) {}
-    },
-    playNoise(duration = 0.2) {
-        if (!this.enabled || !this.ctx) return;
-        try {
-            const bufferSize = this.ctx.sampleRate * duration;
-            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
-            }
-            const noise = this.ctx.createBufferSource();
-            noise.buffer = buffer;
-            const gain = this.ctx.createGain();
-            gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-            noise.connect(gain);
-            gain.connect(this.ctx.destination);
-            noise.start();
-        } catch(e) {}
-    },
-    playBGM() {
-        if (!this.enabled || !this.ctx || this.bgmOsc) return;
-        try {
-            this.bgmOsc = this.ctx.createOscillator();
-            this.bgmGain = this.ctx.createGain();
-            this.bgmOsc.type = 'triangle';
-            this.bgmOsc.frequency.setValueAtTime(110, this.ctx.currentTime); // Âm nền Synth trầm
-            this.bgmGain.gain.setValueAtTime(0.03, this.ctx.currentTime);
-            this.bgmOsc.connect(this.bgmGain);
-            this.bgmGain.connect(this.ctx.destination);
-            this.bgmOsc.start();
-        } catch(e) {}
-    },
-    stopBGM() {
-        if (this.bgmOsc) {
-            try {
-                this.bgmOsc.stop();
-                this.bgmOsc.disconnect();
-            } catch(e) {}
-            this.bgmOsc = null;
-        }
-    },
-    updateButtons() {
-        const btn = document.getElementById('btnAudioToggle');
-        if (btn) btn.innerText = this.enabled ? "ÂM THANH: BẬT" : "ÂM THANH: TẮT";
-    },
-    sfxShoot(type) {
-        if (type === 'laser') this.playTone(800, 'sawtooth', 0.12, 0.08);
-        else if (type === 'gatling') this.playTone(400, 'square', 0.04, 0.04);
-        else if (type === 'omega') this.playTone(1200, 'sine', 0.25, 0.12);
-        else this.playTone(500, 'square', 0.06, 0.05);
-    },
-    sfxExplode() { this.playNoise(0.25); },
-    sfxHit() { this.playTone(120, 'sawtooth', 0.08, 0.08); },
-    sfxCoin() { this.playTone(987.77, 'sine', 0.1, 0.08); },
-    sfxLevel() { this.playTone(523.25, 'triangle', 0.3, 0.1); },
-    sfxHeal() { this.playTone(659.25, 'sine', 0.2, 0.08); }
-};
-const AudioSys = window.AudioSys;
-
     // --- HỆ THỐNG THỜI GIAN BẢO MẬT ---
 let serverTimeOffset = 0; // Độ lệch giữa server và client
 let lastKnownOnlineTime = 0;
@@ -118,18 +32,22 @@ async function syncData() {
   if (!navigator.onLine) return;
 
   const local = JSON.parse(localStorage.getItem("gameData") || "{}");
+
   const cloudSnap = await fb.getDoc(fb.doc(db, "users", auth.currentUser.uid));
   const cloud = cloudSnap.exists() ? cloudSnap.data() : null;
 
   if (!cloud) {
+    // chưa có cloud → đẩy local lên
     await fb.setDoc(fb.doc(db, "users", auth.currentUser.uid), local);
     return;
   }
 
-  // Đã đồng bộ chuẩn trường dữ liệu thành 'lastUpdated'
-  if ((local.lastUpdated || 0) > (cloud.lastUpdated || 0)) {
+  // So sánh thời gian
+  if ((local.lastUpdate || 0) > (cloud.lastUpdate || 0)) {
+    // local mới hơn → push lên cloud
     await fb.setDoc(fb.doc(db, "users", auth.currentUser.uid), local);
   } else {
+    // cloud mới hơn → ghi đè local
     localStorage.setItem("gameData", JSON.stringify(cloud));
     gData = cloud;
   }
@@ -159,23 +77,13 @@ async function getServerTime() {
   }
 }
 async function syncServerTimeOffset() {
-    if (!navigator.onLine) {
-        serverTimeOffset = 0;
-        return;
-    }
     try {
-        // Cấu hình timeout ngắn (2 giây) để nếu mạng chập chờn sẽ hủy lệnh ngay, không treo game
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-        
-        const res = await fetch('https://worldtimeapi.org', { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
+        const res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
         const data = await res.json();
         const serverTime = new Date(data.utc_datetime).getTime();
         serverTimeOffset = serverTime - Date.now();
     } catch {
-        serverTimeOffset = 0; // Luôn an toàn tuyệt đối, quay về thời gian máy
+        serverTimeOffset = 0; // Fallback nếu offline
     }
 }
 // Gọi hàm này ngay khi game vừa load lên
@@ -596,33 +504,34 @@ player.drone = gData.equip.d || '';
       
     function loop(timestamp) {  
     if(state !== 'PLAYING') return; 
-    requestAnimationFrame(loop); // GIỮ LẠI: Lần gọi vòng lặp duy nhất ở đây
+    requestAnimationFrame(loop); 
 
     // --- CƠ CHẾ CÂN BẰNG TỐC ĐỘ (CAP TẠI 60 FPS) ---
     if (!timestamp) timestamp = performance.now();
     let dt = timestamp - (game.lastTime || 0);
+    // 16.66ms tương đương với 60 Frames/Giây. Nếu frame xuất hiện sớm hơn, ta bỏ qua không xử lý.
     if (dt < 16.66) return; 
+    // Trừ đi số dư để frame sau mượt mà hơn
     game.lastTime = timestamp - (dt % 16.66);
     // ----------------------------------------------
 
+    // (Phần code bên dưới giữ nguyên)
     if(isEndlessMode && !game.boss) {
         game.surviveFrames++;
         if(game.surviveFrames % 3600 === 0) { 
-            game.lvl++; 
-            if(game.lvl % 5 === 0) {
-                trackQuest('games', 1); 
-                spawnBoss(); 
-            }
-            AudioSys.sfxLevel(); 
-            showLvlUp(); 
+        game.lvl++; 
+        if(game.lvl % 5 === 0) {
+            trackQuest('games', 1); 
+            spawnBoss(); 
         }
+        AudioSys.sfxLevel(); 
+        showLvlUp(); 
     }
-    
-    // ĐÃ XÓA BLOCK KIỂM TRA STATE VÀ REQUESTANIMATIONFRAME BỊ TRÙNG LẶP Ở ĐÂY
-    game.frame++;  
-    ctx.save();  
-    if(game.shake > 0) { ctx.translate((Math.random()-0.5)*game.shake, (Math.random()-0.5)*game.shake); game.shake *= 0.85; if(game.shake < 0.5) game.shake = 0; }  
-    
+}
+        if(state !== 'PLAYING') return; requestAnimationFrame(loop); game.frame++;  
+        ctx.save();  
+        if(game.shake > 0) { ctx.translate((Math.random()-0.5)*game.shake, (Math.random()-0.5)*game.shake); game.shake *= 0.85; if(game.shake < 0.5) game.shake = 0; }  
+        // Xử lý kích hoạt sự kiện sau khi lên cấp (chờ Boss chết mới chạy)
 if (game.pendingEventRoll && !game.boss) {
     game.pendingEventRoll = false;
     if (Math.random() < 0.1) { // 35% tỷ lệ xảy ra sự kiện

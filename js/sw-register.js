@@ -25,7 +25,6 @@ if ('service-worker' in navigator) {
       btn.onclick = () => {
         worker.postMessage({ type: 'SKIP_WAITING' });
         document.body.classList.add('sw-exit-active');
-        localStorage.clear();
         sessionStorage.clear();
         setTimeout(() => {
           window.location.reload();
