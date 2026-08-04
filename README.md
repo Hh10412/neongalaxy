@@ -2,7 +2,7 @@
 
 Trò chơi bắn tàu không gian 2D sở hữu đồ họa Neon rực rỡ tích hợp hiệu ứng Bloom & Glitch độc đáo. Hệ thống được trang bị cơ chế bảo mật đa tầng, chống gian lận local và đồng bộ đám mây thời gian thực.
 
-🚀 **[BẤM VÀO ĐÂY ĐỂ CHIẾN NGAY](https://github.io)**
+🚀 **[BẤM VÀO ĐÂY ĐỂ CHIẾN NGAY](https://hh10412.github.io/neongalaxy/)**
 
 ---
 
