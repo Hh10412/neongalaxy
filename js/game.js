@@ -2005,5 +2005,104 @@ if (typeof window.AuthSys !== 'undefined') {
         }
     };
 }
+// THÊM ĐOẠN CODE NÀY VÀO TRƯỚC KHI KHỞI TẠO SHARED WORKER
+if (typeof window.SharedWorker === 'undefined') {
+    console.warn("[HỆ THỐNG] Trình duyệt không hỗ trợ SharedWorker. Kích hoạt giao thức đồng bộ dự phòng (BroadcastChannel).");
+    
+    window.SharedWorker = function(url) {
+        this.port = {
+            start: function() { 
+                console.log("[HỆ THỐNG] Cổng dự phòng đã mở."); 
+            },
+            postMessage: function() {},
+            onmessage: null
+        };
+
+        // Kích hoạt BroadcastChannel để giữ nguyên tính năng đồng bộ data giữa các tab
+        if (typeof window.BroadcastChannel !== 'undefined') {
+            const syncChannel = new BroadcastChannel('neon_galaxy_secure_sync');
+            
+            // Lắng nghe tín hiệu đẩy đi từ UI
+            this.port.postMessage = function(data) {
+                syncChannel.postMessage(data);
+            };
+            
+            // Lắng nghe tín hiệu nhận về
+            syncChannel.onmessage = (event) => {
+                if (typeof this.port.onmessage === 'function') {
+                    this.port.onmessage({ data: event.data });
+                }
+            };
+        } else {
+            console.warn("[HỆ THỐNG] Trình duyệt cũng không hỗ trợ BroadcastChannel. Tắt tính năng đồng bộ chéo.");
+        }
+    };
+}
+
+// --- THÊM ĐOẠN MÃ NÀY VÀO CUỐI KHỐI IIFE CỦA GAME.JS ---
+
+// Xuất các biến nội bộ ra window để sw-register có thể đọc được trạng thái
+window.getGameState = () => state;
+window.verifyIntegrity = verifyIntegrity;
+
+// Khởi tạo Shared Worker
+const gameWorker = new SharedWorker('./shared-worker.js');
+gameWorker.port.start();
+
+// Truyền dữ liệu khởi tạo ban đầu cho Worker
+gameWorker.port.postMessage({ type: 'INIT_DATA', payload: gData });
+
+// Lắng nghe dữ liệu đồng bộ từ Worker truyền xuống
+gameWorker.port.onmessage = (event) => {
+    const { type, payload } = event.data;
+    
+    if (type === 'SYNC_DATA') {
+        // Kiểm tra trạng thái trận đấu
+        if (state === 'PLAYING' || state.startsWith('PAUSED')) {
+            console.warn("Neon Galaxy: Đang trong chiến dịch, hoãn đồng bộ nền!");
+            return;
+        }
+        
+        // Cập nhật gData và tính toán lại bảo mật
+        gData = payload;
+        syncHash(); 
+        secureSaveLocal(gData);
+        
+        // Làm mới UI cục bộ trên tab hiện tại
+        if(document.getElementById('hudCoin')) document.getElementById('hudCoin').innerText = gData.coins;
+        if(document.getElementById('shopCoin')) document.getElementById('shopCoin').innerText = gData.coins;
+        if(document.getElementById('eqCoin')) document.getElementById('eqCoin').innerText = gData.coins;
+        if(document.getElementById('profLvl')) document.getElementById('profLvl').innerText = gData.maxLvl || 1;
+        if(document.getElementById('profScore')) document.getElementById('profScore').innerText = gData.maxScore || 0;
+        
+        // Gọi lại các hàm render UI phụ nếu màn hình đang mở
+        if (typeof updateCraftingUI === 'function' && !document.getElementById('craftScreen').classList.contains('hidden')) updateCraftingUI();
+        if (typeof openEquip === 'function' && !document.getElementById('equipScreen').classList.contains('hidden')) openEquip();
+    }
+};
+
+// Bọc (Override) hàm save() hiện tại
+const originalSave = save;
+save = function() {
+    originalSave(); // Vẫn chạy logic lưu LocalStorage và saveSync Firebase cũ
+    gameWorker.port.postMessage({ type: 'UPDATE_DATA', payload: gData }); // Bắn data lên Worker
+};
+
+// Bọc (Override) hàm startGame()
+const originalStartGame = startGame;
+startGame = function() {
+    originalStartGame(); // Vẫn chạy logic dọn dẹp UI, reset biến, tạo Player cũ
+    gameWorker.port.postMessage({ type: 'GAME_START' }); // Báo Worker khóa đồng bộ
+};
+
+// Bọc (Override) hàm gameOver() nếu nó tồn tại trong file
+if (typeof gameOver === 'function') {
+    const originalGameOver = gameOver;
+    gameOver = function() {
+        originalGameOver(); // Chạy logic game over cũ
+        gameWorker.port.postMessage({ type: 'GAME_END', payload: gData }); // Cập nhật data tổng kết trận
+    };
+}
+// --- KẾT THÚC ĐOẠN THÊM VÀO ---
 
   })(); 
