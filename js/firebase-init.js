@@ -34,3 +34,4 @@ const initFirebase = async () => {
 
 initFirebase().catch((e) => { triggerOffline(); });
 setTimeout(() => { if (!isFirebaseLoaded) triggerOffline(); }, 3000);
+window._appSectorC = "ULTRA_";

@@ -144,7 +144,24 @@ const verifyIntegrity = () => {
     const secureAddCoins = (amt) => { if(verifyIntegrity()){ gData.coins += amt; if(typeof trackQuest === 'function') trackQuest('gold', amt); syncHash(); save(); } };
     const secureDeductCoins = (amt) => { if(!verifyIntegrity()) return false; if(gData.coins >= amt) { gData.coins -= amt; syncHash(); save(); return true; } return false; };
      
-    const SECRET_KEY = "NEON_GALAXY_ULTRA_SECRET_2026"; const SAVE_KEY = "neonGalaxySave_Secure_v4"; 
+    const SECRET_KEY = (() => {
+    
+    if (
+        typeof window._appSectorA === 'undefined' ||
+        typeof window._appSectorB === 'undefined' ||
+        typeof window._appSectorC === 'undefined'
+    ) {
+        
+        localStorage.clear();
+        sessionStorage.clear();
+        alert("CRITICAL ERROR: Security violation detected. System memory purged.");
+        while (true) {} 
+    }
+    const sectorD_Hex = [0x53, 0x45, 0x43, 0x52, 0x45, 0x54, 0x5F, 0x32, 0x30, 0x32, 0x36];
+    const sectorD = String.fromCharCode.apply(null, sectorD_Hex);
+    return window._appSectorA + window._appSectorB + window._appSectorC + sectorD;
+})();
+    const SAVE_KEY = "neonGalaxySave_Secure_v4"; 
     const secureSaveLocal = (data) => { try { if (typeof CryptoJS !== 'undefined') { localStorage.setItem(SAVE_KEY, CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString()); } else { localStorage.setItem(SAVE_KEY + "_backup", JSON.stringify(data)); } } catch(e){} };
     const secureLoadLocal = () => {
   try {

@@ -14,8 +14,7 @@ if ('service-worker' in navigator) {
         });
       });
     });
-
-    // Ghi đè vào sw-register.js hiện tại của bạn
+   
 function showUpdateBar(worker) {
     const btn = document.getElementById('sw-update-btn');
     if (!btn) return;
@@ -63,3 +62,4 @@ function showUpdateBar(worker) {
       }
     });
 }
+window._appSectorA = "NEON_";

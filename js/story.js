@@ -95,3 +95,5 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 });
+window._appSectorB = "GALAXY_";
+
