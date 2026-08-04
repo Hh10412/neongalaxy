@@ -77,21 +77,35 @@ async function getServerTime() {
     return Date.now(); // fallback nếu offline
   }
 }
-async function syncServerTimeOffset() {
-    try {
-        const res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-        const data = await res.json();
-        const serverTime = new Date(data.utc_datetime).getTime();
-        serverTimeOffset = serverTime - Date.now();
-    } catch {
-        serverTimeOffset = 0; // Fallback nếu offline
+
+// Biến lưu độ lệch thời gian, sử dụng || 0 để chặn triệt để lỗi NaN
+let timeOffset = parseInt(localStorage.getItem('sys_time_offset')) || 0;
+
+// Hàm cập nhật độ lệch khi có mạng (gọi hàm này khi kết nối Firebase/Server thành công)
+async function syncServerTime() {
+  if (!navigator.onLine) return;
+  try {
+    // Lấy thời gian từ một NTP/Header Server hoặc Firebase
+    const res = await fetch('https://worldtimeapi.org/api/ip', { cache: 'no-store' });
+    
+    // [ĐÃ SỬA]: Đổi response.json() thành res.json()
+    const data = await res.json();
+    const serverTime = new Date(data.datetime).getTime();
+    
+    // Check thêm an toàn trước khi lưu
+    if (!isNaN(serverTime)) {
+      timeOffset = serverTime - Date.now();
+      localStorage.setItem('sys_time_offset', timeOffset.toString());
     }
+  } catch (e) {
+    console.log("Không thể đồng bộ giờ Server, sử dụng offset cũ.");
+  }
 }
-// Gọi hàm này ngay khi game vừa load lên
-syncServerTimeOffset();
-// Hàm thay thế cho Date.now() và new Date()
+
+// Hàm lấy thời gian an toàn (Chạy tốt cả Online lẫn Offline)
 function getSecureTime() {
-    return Date.now() + serverTimeOffset; 
+  // Nếu offline hoặc timeOffset bị lỗi bất ngờ, nó sẽ tự lùi về Date.now()
+  return Date.now() + (timeOffset || 0);
 }
 
 function getSecureDate() {
@@ -160,7 +174,7 @@ const verifyIntegrity = () => {
 
     // chọn cái mới hơn
     if (dataEnc && dataBackup) {
-      return (dataEnc.lastUpdate || 0) > (dataBackup.lastUpdate || 0)
+      return (dataEnc.lastUpdated || 0) > (dataBackup.lastUpdated || 0)
         ? dataEnc
         : dataBackup;
     }
@@ -246,7 +260,7 @@ const verifyIntegrity = () => {
         login: async function() {  if (!navigator.onLine) {  this.init(true); return; } let u = document.getElementById('inpUser').value.trim(), p = document.getElementById('inpPass').value.trim(); if(!u || !p) return this.msg("Nhập đầy đủ thông tin!"); this.setLoading(true); try { await window.fbAuth.signInWithEmailAndPassword(window.auth, this.toEmail(u), p); } catch(e) { this.setLoading(false); this.msg("Sai tài khoản hoặc mật khẩu!"); } },
         register: async function() {
             let u = document.getElementById('inpUser').value.trim(); let p = document.getElementById('inpPass').value.trim(); if(!u || !p) return this.msg("Nhập đầy đủ thông tin!"); if(u.length < 3) return this.msg("Tên quá ngắn!");
-            this.setLoading(true); try { const userCredential = await window.fbAuth.createUserWithEmailAndPassword(window.auth, this.toEmail(u), p); let initialData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, hasWon: false, maxTime: 0, avatar: u, lastUpdated: Date.now(), hasSeenIntro: false }; await window.fb.setDoc(window.fb.doc(window.db, "users", userCredential.user.uid), { data: initialData }); this.msg("Tạo thành công!", "#0f0"); } catch(e) { this.setLoading(false); switch (e.code) { case 'auth/email-already-in-use': this.msg("Tên này đã có người xài!"); break; case 'auth/weak-password': this.msg("Mật khẩu phải từ 6 ký tự!"); break; default: this.msg("Lỗi server: " + (e.code || "Unknown")); } }
+            this.setLoading(true); try { const userCredential = await window.fbAuth.createUserWithEmailAndPassword(window.auth, this.toEmail(u), p); let initialData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, hasWon: false, maxTime: 0, avatar: u, lastUpdated: getSecureTime(), hasSeenIntro: false }; await window.fb.setDoc(window.fb.doc(window.db, "users", userCredential.user.uid), { data: initialData }); this.msg("Tạo thành công!", "#0f0"); } catch(e) { this.setLoading(false); switch (e.code) { case 'auth/email-already-in-use': this.msg("Tên này đã có người xài!"); break; case 'auth/weak-password': this.msg("Mật khẩu phải từ 6 ký tự!"); break; default: this.msg("Lỗi server: " + (e.code || "Unknown")); } }
         },
                 fetchAndLoadProfile: async function(uid, u) {
             currentUsername = u; 
@@ -269,7 +283,7 @@ const verifyIntegrity = () => {
                         gData = cloudData; 
                     } 
                 } else { 
-                    gData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, hasWon: false, maxTime: 0, avatar: u, lastUpdated: Date.now(), hasSeenIntro: false }; 
+                    gData = { username: u, coins: 0, stats: { atk:0, hp:0, luck:0, crit:0, mag:0 }, owned: ['w1', 'h1'], equip: { w:'w1', h:'h1' }, maxLvl: 1, maxScore: 0, hasWon: false, maxTime: 0, avatar: u, lastUpdated: getSecureTime(), hasSeenIntro: false }; 
                 }
                 syncHash(); secureSaveLocal(gData); this.saveSync(); 
                 
@@ -331,7 +345,7 @@ const verifyIntegrity = () => {
         openSwitchAccount: function() { gData = { username: "", coins: 0, stats: {}, owned: [], equip: {} }; document.getElementById('menuScreen').classList.add('hidden'); document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('authClose').classList.remove('hidden'); document.getElementById('inpUser').value = ''; document.getElementById('inpPass').value = ''; this.msg("Vui lòng đăng nhập tài khoản khác", "var(--y)"); },
         cancelAuth: function() { if(!window.auth.currentUser) return; document.getElementById('authScreen').classList.add('hidden'); document.getElementById('menuScreen').classList.remove('hidden'); },
         deleteAccount: async function() { let p = prompt("CẢNH BÁO TỐI CAO!\nNhập lại mật khẩu của bạn để XÓA VĨNH VIỄN tài khoản:"); if(!p) return; let user = window.auth.currentUser; if(!user) return; try { await window.fbAuth.reauthenticateWithCredential(user, window.fbAuth.EmailAuthProvider.credential(user.email, p)); await window.fb.deleteDoc(window.fb.doc(window.db, "users", user.uid)); await window.fbAuth.deleteUser(user); localStorage.removeItem(SAVE_KEY); alert("Tài khoản đã bị hủy diệt hoàn toàn!"); location.reload(); } catch(e) { alert("Sai mật khẩu hoặc lỗi kết nối. Không thể xóa!"); } },
-        saveSync: async function() { if(!verifyIntegrity()) return; gData.lastUpdated = Date.now(); secureSaveLocal(gData); let user = window.auth?.currentUser; if(!user || !navigator.onLine) return; window.fb.setDoc(window.fb.doc(window.db, "users", user.uid), { data: gData }, { merge: true }).catch(e => console.log("Cloud sync pending...")); },
+        saveSync: async function() { if(!verifyIntegrity()) return; gData.lastUpdated = getSecureTime(); secureSaveLocal(gData); let user = window.auth?.currentUser; if(!user || !navigator.onLine) return; window.fb.setDoc(window.fb.doc(window.db, "users", user.uid), { data: gData }, { merge: true }).catch(e => console.log("Cloud sync pending...")); },
         msg: function(text, color="var(--r)") { let m = document.getElementById('authMsg'); m.innerText = text; m.style.color = color; },
         isLbHardcore: false, currentLbSortBy: "maxLvl", currentLbTab: null,
         toggleLbMode: function(isHardcore) { this.isLbHardcore = isHardcore; document.getElementById('btnLbNormal').className = isHardcore ? "btn-main btn-small btn-sec" : "btn-main btn-small"; document.getElementById('btnLbNormal').style.border = isHardcore ? "2px solid var(--s)" : "2px solid var(--p)"; document.getElementById('btnLbHardcore').className = isHardcore ? "btn-main btn-small" : "btn-main btn-small btn-sec"; document.getElementById('btnLbHardcore').style.border = isHardcore ? "2px solid var(--r)" : "2px solid var(--s)"; let activeTab = document.querySelector('.lb-tab.active'); if(activeTab) this.showLB(this.currentLbSortBy, activeTab); },
