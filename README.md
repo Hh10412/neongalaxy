@@ -26,4 +26,4 @@ Trò chơi bắn tàu không gian 2D với đồ họa Neon rực rỡ và hệ 
 - **Nâng cấp:** Tích lũy vàng sau mỗi trận đấu để tiến hóa chỉ số cơ bản trong Cửa hàng.
 
 ---
-© 2026 Hh10412. Phát triển với đam mê lập trình game Web tĩnh.
+© 2026 Hh10412.
