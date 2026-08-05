@@ -504,7 +504,86 @@ document.addEventListener('touchstart', unlockAudio);
       
     function resize() { W = cvs.width = window.innerWidth; H = cvs.height = window.innerHeight; initStars(); }  
     window.addEventListener('resize', resize); resize();  
-      
+          // =========================================================================
+    // HỆ THỐNG CẢNH BÁO KHI GIAO DIỆN QUÁ NHỎ (BẢO VỆ TRẢI NGHIỆM)
+    // =========================================================================
+    const LayoutProtector = {
+        overlay: null,
+        
+        // CÀI ĐẶT KÍCH THƯỚC TỐI THIỂU (Có thể tinh chỉnh theo game của bạn)
+        MIN_HEIGHT: 550, // Chiều cao tối thiểu (pixel) để game vẫn chơi được
+        MIN_WIDTH: 325,  // Chiều rộng tối thiểu (pixel)
+
+        init: function() {
+            // 1. Tạo lớp phủ và khung thông báo (Toast)
+            this.overlay = document.createElement('div');
+            this.overlay.id = "layoutProtectOverlay";
+            this.overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.4); 
+                backdrop-filter: blur(2px);
+                z-index: 999999;
+                display: none; /* Mặc định ẩn */
+                flex-direction: column;
+                justify-content: flex-end; 
+                align-items: center;
+                padding-bottom: 80px; 
+            `;
+
+            // Khung Toast mô phỏng chính xác giao diện trong ảnh
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: rgba(70, 70, 70, 0.95);
+                color: #fff;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                padding: 16px 24px;
+                border-radius: 30px;
+                text-align: center;
+                max-width: 85%;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                line-height: 1.4;
+            `;
+            toast.innerText = "Kích thước cửa sổ quá nhỏ. Vui lòng phóng to để tiếp tục trải nghiệm.";
+            
+            this.overlay.appendChild(toast);
+            document.body.appendChild(this.overlay);
+
+            // 2. Lắng nghe sự kiện thay đổi kích thước cửa sổ
+            window.addEventListener('resize', () => this.checkLayout());
+            
+            // Kiểm tra ngay khi khởi tạo
+            this.checkLayout();
+        },
+
+        checkLayout: function() {
+            const winH = window.innerHeight;
+            const winW = window.innerWidth;
+            
+            // ĐIỀU KIỆN: Chỉ chặn khi chiều cao HOẶC chiều rộng nhỏ hơn mức cho phép
+            if (winH < this.MIN_HEIGHT || winW < this.MIN_WIDTH) {
+                // Hiện thông báo
+                this.overlay.style.display = 'flex';
+                
+                // (Tùy chọn) Tạm dừng game để tránh người chơi thao tác nhầm
+                if (typeof state !== 'undefined' && state === 'PLAYING' && typeof togglePause === 'function') {
+                    togglePause();
+                }
+            } else {
+                // Kích thước vẫn đủ lớn để chơi -> Ẩn thông báo
+                this.overlay.style.display = 'none';
+            }
+        }
+    };
+
+    // Khởi chạy hệ thống
+    LayoutProtector.init();
+    // =========================================================================
+
     function initStars() {  
         stars = []; for(let i=0; i<100; i++) stars.push({ x: Math.random()*W, y: Math.random()*H, s: Math.random()*2+0.5, r: Math.random()*1.5+0.5, layer: Math.random()>0.8?2:1 });  
     }  
