@@ -1,4 +1,4 @@
-# 🌌 Neon Galaxy: Overdrive (v5.8.4.4)
+# 🌌 Neon Galaxy: Overdrive (v5.8.5)
 
 Trò chơi bắn tàu không gian 2D sở hữu đồ họa Neon rực rỡ tích hợp hiệu ứng Bloom & Glitch độc đáo. Hệ thống được trang bị cơ chế bảo mật đa tầng, chống gian lận dữ liệu cục bộ và đồng bộ hóa đám mây thời gian thực.
 
